@@ -42,22 +42,6 @@
             <groupId>org.wso2.siddhi</groupId>
             <artifactId>siddhi-extension-wso2-output-mapper</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.ws.commons.axiom</groupId>
-            <artifactId>axiom-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.commons.axiom</groupId>
-            <artifactId>axiom-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.james</groupId>
-            <artifactId>apache-mime4j-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -93,22 +77,6 @@
                                 <bundle>
                                     <symbolicName>siddhi-extension-wso2-input-mapper</symbolicName>
                                     <version>${wso2event.mapper.bundle.version}</version>
-                                </bundle>
-                                <bundle>
-                                    <symbolicName>org.apache.ws.commons.axiom.axiom-api</symbolicName>
-                                    <version>${axiom.version}</version>
-                                </bundle>
-                                <bundle>
-                                    <symbolicName>org.apache.ws.commons.axiom.axiom-impl</symbolicName>
-                                    <version>${axiom.version}</version>
-                                </bundle>
-                                <bundle>
-                                    <symbolicName>org.apache.james.apache-mime4j-core</symbolicName>
-                                    <version>${mime4j.version}</version>
-                                </bundle>
-                                <bundle>
-                                    <symbolicName>jaxen</symbolicName>
-                                    <version>${jaxen.version}</version>
                                 </bundle>
                             </bundles>
                         </configuration>
