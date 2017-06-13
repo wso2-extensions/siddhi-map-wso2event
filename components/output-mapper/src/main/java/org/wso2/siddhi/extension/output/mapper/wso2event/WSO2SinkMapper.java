@@ -60,6 +60,11 @@ import java.util.TreeMap;
                 @Parameter(name = "wso2event.stream.id",
                         description =
                                 "Used to provide the outgoing event's wso2event stream id",
+                        type = {DataType.STRING}),
+                @Parameter(name = "arbitrary.map",
+                        description =
+                                "Used to provide the attribute name of the stream which the arbitrary object to be " +
+                                        "mapped from",
                         type = {DataType.STRING})
         },
         examples = {

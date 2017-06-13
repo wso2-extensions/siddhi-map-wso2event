@@ -53,14 +53,19 @@ import java.util.TreeMap;
                 @Parameter(name = "wso2event.stream.id",
                         description =
                                 "Used to provide the incoming event's wso2event stream id",
+                        type = {DataType.STRING}),
+                @Parameter(name = "arbitrary.map",
+                        description =
+                                "Used to provide the attribute name of the stream which the arbitrary object to be " +
+                                        "mapped",
                         type = {DataType.STRING})
         },
         examples = {
                 @Example(
                         syntax = "@source(type=’wso2event’, " +
-                                "@map(type=’wso2event’, wso2event.stream.id=org.wso2event.fooStream:1.0.0))\n" +
+                                "@map(type=’wso2event’, wso2event.stream.id=org.wso2event.fooStream:1.0.0)) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
-                                "volume long);\n",
+                                "volume long);",
                         description = "Above configuration will do a WSO2 mapping. Expected input will look like " +
                                 "below." +
                                 "Wso2event = {" +
@@ -76,9 +81,10 @@ import java.util.TreeMap;
                                 "has the exact amount of attributes as defined in the stream"),
                 @Example(
                         syntax = "@source(type=’wso2event’, " +
-                                "@map(type=’wso2event’, wso2event.stream.id='org.wso2event.fooStream:1.0.0))\n" +
+                                "@map(type=’wso2event’, wso2event.stream.id='org.wso2event.fooStream:1.0.0," +
+                                    " arbitrary.map='arbitrary_object')) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
-                                "volume long, arbitrary object));\n",
+                                "volume long, arbitrary_object object)); ",
                         description = "Above configuration will do a WSO2 mapping which also expects an arbitrary " +
                                 "map. Expected input will look like below." +
                                 "Wso2event = {" +
