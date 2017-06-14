@@ -16,8 +16,7 @@
     <name>Siddhi WSO2 Map Extensions</name>
 
     <modules>
-        <module>components/source-mapper</module>
-        <module>components/sink-mapper</module>
+        <module>components/wso2-mappers</module>
         <module>features/org.wso2.extension.siddhi.map.wso2event</module>
     </modules>
 
@@ -40,12 +39,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.siddhi</groupId>
-                <artifactId>org-wso2-extension-siddhi-map-wso2event-source</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.siddhi</groupId>
-                <artifactId>org-wso2-extension-siddhi-map-wso2event-sink</artifactId>
+                <artifactId>org-wso2-extension-siddhi-map-wso2event</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

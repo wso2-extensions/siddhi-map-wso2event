@@ -36,11 +36,7 @@
     <dependencies>
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
-            <artifactId>org-wso2-extension-siddhi-map-wso2event-source</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.siddhi</groupId>
-            <artifactId>org-wso2-extension-siddhi-map-wso2event-sink</artifactId>
+            <artifactId>org-wso2-extension-siddhi-map-wso2event</artifactId>
         </dependency>
     </dependencies>
 
@@ -71,11 +67,7 @@
                             </adviceFileContents>
                             <bundles>
                                 <bundle>
-                                    <symbolicName>org-wso2-extension-siddhi-map-wso2event-source</symbolicName>
-                                    <version>${wso2event.mapper.bundle.version}</version>
-                                </bundle>
-                                <bundle>
-                                    <symbolicName>org-wso2-extension-siddhi-map-wso2event-sink</symbolicName>
+                                    <symbolicName>org-wso2-extension-siddhi-map-wso2event</symbolicName>
                                     <version>${wso2event.mapper.bundle.version}</version>
                                 </bundle>
                             </bundles>
