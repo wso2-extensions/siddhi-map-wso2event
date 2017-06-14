@@ -16,8 +16,8 @@
     <name>Siddhi WSO2 Map Extensions</name>
 
     <modules>
-        <module>components/input-mapper</module>
-        <module>components/output-mapper</module>
+        <module>components/source-mapper</module>
+        <module>components/sink-mapper</module>
         <module>features/org.wso2.extension.siddhi.map.wso2event</module>
     </modules>
 
@@ -40,12 +40,12 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.siddhi</groupId>
-                <artifactId>siddhi-extension-wso2-input-mapper</artifactId>
+                <artifactId>org-wso2-extension-siddhi-map-wso2event-source</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.siddhi</groupId>
-                <artifactId>siddhi-extension-wso2-output-mapper</artifactId>
+                <artifactId>org-wso2-extension-siddhi-map-wso2event-sink</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -90,9 +90,9 @@
     </properties>
 
     <scm>
-        <url>https://github.com/wso2-extensions/siddhi-map-wso2.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2.git</developerConnection>
-        <connection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2.git</connection>
+        <url>https://github.com/wso2-extensions/siddhi-map-wso2event.git</url>
+        <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2event.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2event.git</connection>
         <tag>HEAD</tag>
     </scm>
 

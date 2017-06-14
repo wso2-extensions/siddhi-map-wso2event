@@ -27,7 +27,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>siddhi-map-wso2event-feature</artifactId>
+    <artifactId>org-wso2-extension-siddhi-map-wso2event-feature</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 Siddhi Mapper Extension WSO2 Event Mapper Feature</name>
     <url>http://wso2.org</url>
@@ -36,11 +36,11 @@
     <dependencies>
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-wso2-input-mapper</artifactId>
+            <artifactId>org-wso2-extension-siddhi-map-wso2event-source</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.siddhi</groupId>
-            <artifactId>siddhi-extension-wso2-output-mapper</artifactId>
+            <artifactId>org-wso2-extension-siddhi-map-wso2event-sink</artifactId>
         </dependency>
     </dependencies>
 
@@ -71,11 +71,11 @@
                             </adviceFileContents>
                             <bundles>
                                 <bundle>
-                                    <symbolicName>siddhi-extension-wso2-output-mapper</symbolicName>
+                                    <symbolicName>org-wso2-extension-siddhi-map-wso2event-source</symbolicName>
                                     <version>${wso2event.mapper.bundle.version}</version>
                                 </bundle>
                                 <bundle>
-                                    <symbolicName>siddhi-extension-wso2-input-mapper</symbolicName>
+                                    <symbolicName>org-wso2-extension-siddhi-map-wso2event-sink</symbolicName>
                                     <version>${wso2event.mapper.bundle.version}</version>
                                 </bundle>
                             </bundles>
