@@ -17,7 +17,6 @@
 
     <modules>
         <module>components/wso2-mappers</module>
-        <module>features/org.wso2.extension.siddhi.map.wso2event</module>
     </modules>
 
     <dependencyManagement>
