@@ -18,7 +18,6 @@
 package org.wso2.extension.siddhi.map.wso2event;
 
 import org.apache.log4j.Logger;
-import org.wso2.carbon.databridge.commons.AttributeType;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
 import org.wso2.extension.siddhi.map.wso2event.service.StreamDefinitionHolder;
 import org.wso2.siddhi.annotation.Example;
@@ -106,13 +105,8 @@ import java.util.TreeMap;
 public class WSO2SinkMapper extends SinkMapper {
     private static final Logger LOG = Logger.getLogger(WSO2SinkMapper.class);
     private String outputStreamId;
-    private static final String META_DATA_PREFIX = "meta_";
-    private static final String CORRELATION_DATA_PREFIX = "correlation_";
-    private static final String TO_STREAM_ID = "wso2event.stream.id";
-    private static final String ARBITRARY_MAP_ATTRIBUTE = "arbitrary.map";
-    private static final String STREAM_NAME_VER_DELIMITER = ":";
-    private int arbitraryAttributeIndex = -1;
     private Map<InputDataType, Map<Integer, Integer>> attributePositionMap = new HashMap<>();
+    private int arbitraryAttributeIndex = -1;
 
     @Override
     public String[] getSupportedDynamicOptions() {
@@ -134,9 +128,10 @@ public class WSO2SinkMapper extends SinkMapper {
             throw new ExecutionPlanValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         }
-        this.outputStreamId = optionHolder.validateAndGetStaticValue(TO_STREAM_ID,
-                streamDefinition.getId() + STREAM_NAME_VER_DELIMITER + "1.0.0");
-        String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(ARBITRARY_MAP_ATTRIBUTE, null);
+        this.outputStreamId = optionHolder.validateAndGetStaticValue(Utils.WSO2_STREAM_ID_PARAMETER_NAME,
+                streamDefinition.getId() + Utils.STREAM_NAME_VER_DELIMITER + "1.0.0");
+        String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
+                Utils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
         List<Attribute> attributeList = streamDefinition.getAttributeList();
         Map<Integer, Integer> payloadDataMap = new TreeMap<Integer, Integer>();
         Map<Integer, Integer> metaDataMap = new TreeMap<Integer, Integer>();
@@ -147,16 +142,16 @@ public class WSO2SinkMapper extends SinkMapper {
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
         org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
         for (int i = 0; i < attributeList.size(); i++) {
-            if (attributeList.get(i).getName().startsWith(META_DATA_PREFIX)) {
+            if (attributeList.get(i).getName().startsWith(Utils.META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
-                wso2eventAttribute = createWso2EventAttribute(attributeList.get(i));
+                wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
                 if (null != wso2eventAttribute) {
                     metaAttributeList.add(wso2eventAttribute);
                 }
                 metaDataMap.put(metaCount, i);
                 metaCount++;
-            } else if (attributeList.get(i).getName().startsWith(CORRELATION_DATA_PREFIX)) {
-                wso2eventAttribute = createWso2EventAttribute(attributeList.get(i));
+            } else if (attributeList.get(i).getName().startsWith(Utils.CORRELATION_DATA_PREFIX)) {
+                wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
                 if (null != wso2eventAttribute) {
                     correlationAttributeList.add(wso2eventAttribute);
                 }
@@ -172,7 +167,7 @@ public class WSO2SinkMapper extends SinkMapper {
                             Type.OBJECT);
                 }
             } else {
-                wso2eventAttribute = createWso2EventAttribute(attributeList.get(i));
+                wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
                 if (null != wso2eventAttribute) {
                     payloadAttributeList.add(wso2eventAttribute);
                 }
@@ -181,7 +176,7 @@ public class WSO2SinkMapper extends SinkMapper {
             }
         }
 
-        String streamNameVersion[] = outputStreamId.split(STREAM_NAME_VER_DELIMITER);
+        String streamNameVersion[] = outputStreamId.split(Utils.STREAM_NAME_VER_DELIMITER);
         try {
             org.wso2.carbon.databridge.commons.StreamDefinition wso2StreamDefinition = new org.wso2.carbon.databridge
                     .commons.StreamDefinition(streamNameVersion[0], streamNameVersion[1]);
@@ -273,43 +268,6 @@ public class WSO2SinkMapper extends SinkMapper {
             }
         }
         return wso2event;
-    }
-
-    /**
-     * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}
-     *
-     * @param attribute Siddhi Event attribute object
-     * @return the created WSO2 Event attribute
-     */
-    private org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(Attribute attribute) {
-        org.wso2.carbon.databridge.commons.AttributeType attribute1;
-        switch (attribute.getType()) {
-            case BOOL:
-                attribute1 = AttributeType.BOOL;
-                break;
-            case STRING:
-                attribute1 = AttributeType.STRING;
-                break;
-            case INT:
-                attribute1 = AttributeType.INT;
-                break;
-            case LONG:
-                attribute1 = AttributeType.LONG;
-                break;
-            case FLOAT:
-                attribute1 = AttributeType.FLOAT;
-                break;
-            case DOUBLE:
-                attribute1 = AttributeType.DOUBLE;
-                break;
-            default:
-                attribute1 = null;
-        }
-        if (null != attribute1) {
-            return new org.wso2.carbon.databridge.commons.Attribute(attribute.getName(), attribute1);
-        } else {
-            return null;
-        }
     }
 
     private enum InputDataType {
