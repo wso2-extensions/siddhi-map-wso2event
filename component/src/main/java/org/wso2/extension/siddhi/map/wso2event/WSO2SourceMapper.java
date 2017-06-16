@@ -19,6 +19,8 @@
 package org.wso2.extension.siddhi.map.wso2event;
 
 import org.apache.log4j.Logger;
+import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
+import org.wso2.extension.siddhi.map.wso2event.service.StreamDefinitionHolder;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
@@ -33,6 +35,7 @@ import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,15 +108,9 @@ import java.util.TreeMap;
         }
 )
 public class WSO2SourceMapper extends SourceMapper {
-
     private static final Logger log = Logger.getLogger(WSO2SourceMapper.class);
-    private static final String FROM_STREAM_NAME_ID = "wso2event.stream.id";
-    private static final String ARBITRARY_MAP_ATTRIBUTE = "arbitrary.map";
-    private static final String META_DATA_PREFIX = "meta_";
-    private static final String CORRELATION_DATA_PREFIX = "correlation_";
-    private static final String STREAM_NAME_VER_DELIMITER = ":";
     private List<Attribute> attributeList;
-    private Map<InputDataType, Map<Integer, Integer>> attributePositionMap = null;
+    private Map<Utils.InputDataType, Map<Integer, Integer>> attributePositionMap = null;
     private String inputStreamId;
     private int arbitraryAttributeIndex = -1;
 
@@ -130,25 +127,39 @@ public class WSO2SourceMapper extends SourceMapper {
             attributeMappingList, ConfigReader configReader) {
         attributeList = streamDefinition.getAttributeList();
         attributePositionMap = new HashMap<>(attributeList.size());
-        inputStreamId = optionHolder.validateAndGetStaticValue(FROM_STREAM_NAME_ID, streamDefinition.getId() +
-                STREAM_NAME_VER_DELIMITER + "1.0.0");
-        String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(ARBITRARY_MAP_ATTRIBUTE, null);
+        inputStreamId = optionHolder.validateAndGetStaticValue(
+                Utils.WSO2_STREAM_ID_PARAMETER_NAME,
+                streamDefinition.getId() + Utils.STREAM_NAME_VER_DELIMITER + "1.0.0");
+        String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
+                Utils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
         Map<Integer, Integer> payloadDataMap = new TreeMap<Integer, Integer>();
         Map<Integer, Integer> metaDataMap = new TreeMap<Integer, Integer>();
         Map<Integer, Integer> correlationDataMap = new TreeMap<Integer, Integer>();
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
+        List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList = new ArrayList<>();
+        List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList = new ArrayList<>();
+        List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
+        org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
         if (attributeMappingList != null && attributeMappingList.size() > 0) {
             throw new ExecutionPlanValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         } else {
             //default mapping scenario
             for (int i = 0; i < attributeList.size(); i++) {
-                if (attributeList.get(i).getName().startsWith(META_DATA_PREFIX)) {
+                if (attributeList.get(i).getName().startsWith(Utils.META_DATA_PREFIX)) {
                     //meta array's metaCount'th attribute of import stream will be mapped to the i'th
                     // location of the export stream.
+                    wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
+                    if (null != wso2eventAttribute) {
+                        metaAttributeList.add(wso2eventAttribute);
+                    }
                     metaDataMap.put(metaCount, i);
                     metaCount++;
-                } else if (attributeList.get(i).getName().startsWith(CORRELATION_DATA_PREFIX)) {
+                } else if (attributeList.get(i).getName().startsWith(Utils.CORRELATION_DATA_PREFIX)) {
+                    wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
+                    if (null != wso2eventAttribute) {
+                        correlationAttributeList.add(wso2eventAttribute);
+                    }
                     correlationDataMap.put(correlationCount, i);
                     correlationCount++;
                 } else if (null != arbitraryAttributeName &&
@@ -164,19 +175,30 @@ public class WSO2SourceMapper extends SourceMapper {
                     throw new ExecutionPlanValidationException("Please define arbitrary.map attribute in the " +
                             "stream mapping if there is a \"object\" type attribute in the stream definition");
                 } else {
+                    wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
+                    if (null != wso2eventAttribute) {
+                        payloadAttributeList.add(wso2eventAttribute);
+                    }
                     payloadDataMap.put(payloadCount, i);
                     payloadCount++;
                 }
             }
         }
+        try {
+            StreamDefinitionHolder.setStreamDefinition(
+                    Utils.createWSO2EventStreamDefinition(inputStreamId, metaAttributeList, correlationAttributeList,
+                    payloadAttributeList));
+        } catch (MalformedStreamDefinitionException e) {
+            throw new ExecutionPlanValidationException(e.getMessage(), e);
+        }
         if (0 < metaDataMap.size()) {
-            attributePositionMap.put(InputDataType.META_DATA, metaDataMap);
+            attributePositionMap.put(Utils.InputDataType.META_DATA, metaDataMap);
         }
         if (0 < correlationDataMap.size()) {
-            attributePositionMap.put(InputDataType.CORRELATION_DATA, correlationDataMap);
+            attributePositionMap.put(Utils.InputDataType.CORRELATION_DATA, correlationDataMap);
         }
         if (0 < payloadDataMap.size()) {
-            attributePositionMap.put(InputDataType.PAYLOAD_DATA, payloadDataMap);
+            attributePositionMap.put(Utils.InputDataType.PAYLOAD_DATA, payloadDataMap);
         }
     }
 
@@ -196,9 +218,10 @@ public class WSO2SourceMapper extends SourceMapper {
             if (inputStreamId.equals(wso2event.getStreamId())) {
                 wso2event = (org.wso2.carbon.databridge.commons.Event) eventObject;
                 Object outputAttributes[] = new Object[attributeList.size()];
-                Map<Integer, Integer> metaPositions = attributePositionMap.get(InputDataType.META_DATA);
-                Map<Integer, Integer> correlationPositions = attributePositionMap.get(InputDataType.CORRELATION_DATA);
-                Map<Integer, Integer> payloadPositions = attributePositionMap.get(InputDataType.PAYLOAD_DATA);
+                Map<Integer, Integer> metaPositions = attributePositionMap.get(Utils.InputDataType.META_DATA);
+                Map<Integer, Integer> correlationPositions = attributePositionMap.get(
+                        Utils.InputDataType.CORRELATION_DATA);
+                Map<Integer, Integer> payloadPositions = attributePositionMap.get(Utils.InputDataType.PAYLOAD_DATA);
                 if (null != metaPositions) {
                     for (Map.Entry<Integer, Integer> entry : metaPositions.entrySet()) {
                         outputAttributes[entry.getValue()] = wso2event.getMetaData()[entry.getKey()];
@@ -226,9 +249,5 @@ public class WSO2SourceMapper extends SourceMapper {
             log.warn("Event object is invalid. Expected WSO2Event, but found " + eventObject.getClass()
                     .getCanonicalName() + ". Hence dropping the event");
         }
-    }
-
-    private enum InputDataType {
-        META_DATA, CORRELATION_DATA, PAYLOAD_DATA
     }
 }
