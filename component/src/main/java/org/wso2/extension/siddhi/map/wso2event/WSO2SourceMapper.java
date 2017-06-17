@@ -250,4 +250,8 @@ public class WSO2SourceMapper extends SourceMapper {
                     .getCanonicalName() + ". Hence dropping the event");
         }
     }
+
+    public String getInputStreamId() {
+        return inputStreamId;
+    }
 }
