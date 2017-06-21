@@ -32,7 +32,7 @@ import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
+import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,7 +131,7 @@ public class WSO2SourceMapper extends SourceMapper {
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
         org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
         if (attributeMappingList != null && attributeMappingList.size() > 0) {
-            throw new ExecutionPlanValidationException("WSO2 Transport does not support custom mapping. Please remove" +
+            throw new SiddhiAppValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         } else {
             //default mapping scenario
@@ -157,12 +157,12 @@ public class WSO2SourceMapper extends SourceMapper {
                     if (Attribute.Type.OBJECT.equals(attributeList.get(i).getType())) {
                         arbitraryAttributeIndex = i;
                     } else {
-                        throw new ExecutionPlanValidationException("defined arbitrary.map attribute in the " +
+                        throw new SiddhiAppValidationException("defined arbitrary.map attribute in the " +
                                 "stream mapping is type: " + attributeList.get(i).getType() + ". It should be type: " +
                                 Attribute.Type.OBJECT);
                     }
                 } else if (Attribute.Type.OBJECT.equals(attributeList.get(i).getType())) {
-                    throw new ExecutionPlanValidationException("Please define arbitrary.map attribute in the " +
+                    throw new SiddhiAppValidationException("Please define arbitrary.map attribute in the " +
                             "stream mapping if there is a \"object\" type attribute in the stream definition");
                 } else {
                     wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
@@ -178,7 +178,7 @@ public class WSO2SourceMapper extends SourceMapper {
             this.streamDefinition = Utils.createWSO2EventStreamDefinition(streamDefinition.getId(), metaAttributeList,
                     correlationAttributeList, payloadAttributeList);
         } catch (MalformedStreamDefinitionException e) {
-            throw new ExecutionPlanValidationException(e.getMessage(), e);
+            throw new SiddhiAppValidationException(e.getMessage(), e);
         }
         if (0 < metaDataMap.size()) {
             attributePositionMap.put(Utils.InputDataType.META_DATA, metaDataMap);

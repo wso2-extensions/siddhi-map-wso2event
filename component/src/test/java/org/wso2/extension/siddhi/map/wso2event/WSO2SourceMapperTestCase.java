@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
@@ -87,7 +87,7 @@ public class WSO2SourceMapperTestCase {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values");
         String streams = "" +
-                "@Plan:name('TestExecutionPlan')" +
+                "@App:name('TestSiddhiApp')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
                                                                 "arbitrary.map='arbitrary_object')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
@@ -99,8 +99,8 @@ public class WSO2SourceMapperTestCase {
                 "select * " +
                 "insert into BarStream; ";
         SiddhiManager siddhiManager = new SiddhiManager();
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(streams + query);
-        executionPlanRuntime.addCallback("BarStream", new StreamCallback() {
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
             @Override
             public void receive(Event[] events) {
                 EventPrinter.print(events);
@@ -123,13 +123,13 @@ public class WSO2SourceMapperTestCase {
                 }
             }
         });
-        executionPlanRuntime.start();
+        siddhiAppRuntime.start();
         InMemoryBroker.publish("stock", wso2event);
         InMemoryBroker.publish("stock", wso2event1);
         InMemoryBroker.publish("stock", wso2event2);
         //assert event count
         Assert.assertEquals("Number of events", 3, count.get());
-        executionPlanRuntime.shutdown();
+        siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
 
@@ -138,7 +138,7 @@ public class WSO2SourceMapperTestCase {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values WITHOUT mentioning wso2.stream.id");
         String streams = "" +
-                "@Plan:name('TestExecutionPlan')" +
+                "@App:name('TestSiddhiApp')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
                                         "price float, volume int, arbitrary_object object); " +
@@ -149,8 +149,8 @@ public class WSO2SourceMapperTestCase {
                 "select * " +
                 "insert into BarStream; ";
         SiddhiManager siddhiManager = new SiddhiManager();
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(streams + query);
-        executionPlanRuntime.addCallback("BarStream", new StreamCallback() {
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
             @Override
             public void receive(Event[] events) {
                 EventPrinter.print(events);
@@ -173,7 +173,7 @@ public class WSO2SourceMapperTestCase {
                 }
             }
         });
-        executionPlanRuntime.start();
+        siddhiAppRuntime.start();
         wso2event.setStreamId("FooStream:1.0.0");
         InMemoryBroker.publish("stock", wso2event);
         wso2event1.setStreamId("FooStream:1.0.0");
@@ -182,7 +182,7 @@ public class WSO2SourceMapperTestCase {
         InMemoryBroker.publish("stock", wso2event2);
         //assert event count
         Assert.assertEquals("Number of events", 3, count.get());
-        executionPlanRuntime.shutdown();
+        siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
 }

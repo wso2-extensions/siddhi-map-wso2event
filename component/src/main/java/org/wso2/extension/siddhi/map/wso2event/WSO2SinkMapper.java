@@ -34,7 +34,7 @@ import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.Attribute.Type;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
+import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,7 +117,7 @@ public class WSO2SinkMapper extends SinkMapper {
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder,
                      TemplateBuilder payloadTemplateBuilder, ConfigReader mapperConfigReader) {
         if (payloadTemplateBuilder != null) {   //custom mapping
-            throw new ExecutionPlanValidationException("WSO2 Transport does not support custom mapping. Please remove" +
+            throw new SiddhiAppValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         }
 
@@ -153,7 +153,7 @@ public class WSO2SinkMapper extends SinkMapper {
                 if (Type.OBJECT.equals(attributeList.get(i).getType())) {
                     arbitraryAttributeIndex = i;
                 } else {
-                    throw new ExecutionPlanValidationException("defined arbitrary.map attribute in the " +
+                    throw new SiddhiAppValidationException("defined arbitrary.map attribute in the " +
                             "mapping is type: " + attributeList.get(i).getType() + ". It should be type: " +
                             Type.OBJECT);
                 }
@@ -173,7 +173,7 @@ public class WSO2SinkMapper extends SinkMapper {
             this.streamDefinition = Utils.createWSO2EventStreamDefinition(streamDefinition.getId(), metaAttributeList,
                     correlationAttributeList, payloadAttributeList);
         } catch (MalformedStreamDefinitionException e) {
-            throw new ExecutionPlanValidationException(e.getMessage(), e);
+            throw new SiddhiAppValidationException(e.getMessage(), e);
         }
         if (0 < metaDataMap.size()) {
             attributePositionMap.put(InputDataType.META_DATA, metaDataMap);
