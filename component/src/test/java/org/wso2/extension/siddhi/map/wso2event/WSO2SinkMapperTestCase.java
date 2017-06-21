@@ -92,7 +92,6 @@ public class WSO2SinkMapperTestCase {
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, price float," +
                 " volume int, arbitrary_object object); " +
                 "@sink(type='inMemory', topic='{{symbol}}', @map(type='wso2event', " +
-                "wso2event.stream.id='wso2event.barStream:1.0.0', " +
                 "arbitrary.map='arbitrary_object')) " +
                 "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, price float," +
                 " volume int, arbitrary_object object); ";
@@ -121,7 +120,7 @@ public class WSO2SinkMapperTestCase {
         org.junit.Assert.assertEquals(1212212121L, wso2event.getMetaData()[0]);
         org.junit.Assert.assertEquals("Lanka", wso2event.getCorrelationData()[0]);
         org.junit.Assert.assertEquals("WSO2", wso2event.getPayloadData()[0]);
-        org.junit.Assert.assertEquals("wso2event.barStream:1.0.0", wso2event.getStreamId());
+        org.junit.Assert.assertEquals("BarStream:1.0.0", wso2event.getStreamId());
 
         wso2event = (org.wso2.carbon.databridge.commons.Event) onMessageList.get(1);
         org.junit.Assert.assertEquals(65.645f, wso2event.getPayloadData()[1]);

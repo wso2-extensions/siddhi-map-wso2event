@@ -89,7 +89,6 @@ public class WSO2SourceMapperTestCase {
         String streams = "" +
                 "@Plan:name('TestExecutionPlan')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                                                                "wso2event.stream.id='org.fooStream:1.0.0', " +
                                                                 "arbitrary.map='arbitrary_object')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
                                         "price float, volume int, arbitrary_object object); " +
@@ -137,7 +136,7 @@ public class WSO2SourceMapperTestCase {
     @Test
     public void testWSO2InputMappingDefaultWithoutStreamId() throws InterruptedException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
-                "values WITHOUT mentioning wso2event.stream.id");
+                "values WITHOUT mentioning wso2.stream.id");
         String streams = "" +
                 "@Plan:name('TestExecutionPlan')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
@@ -183,65 +182,6 @@ public class WSO2SourceMapperTestCase {
         InMemoryBroker.publish("stock", wso2event2);
         //assert event count
         Assert.assertEquals("Number of events", 3, count.get());
-        executionPlanRuntime.shutdown();
-        siddhiManager.shutdown();
-    }
-
-    @Test
-    public void testWSO2InputMappingDefaultWithWrongStreamId() throws InterruptedException {
-        log.info("Test case for wso2event input mapping with mapping dropping events with wrong stream id other than " +
-                "mentioned in the execution plan");
-        String streams = "" +
-                "@Plan:name('TestExecutionPlan')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                                                            "wso2event.stream.id='org.fooStream:1.0.0', " +
-                                                            "arbitrary.map='arbitrary_object')) " +
-                "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, price float," +
-                                        " volume int, arbitrary_object object); " +
-                "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, price float," +
-                                        " volume int, arbitrary_object object); ";
-        String query = "" +
-                "from FooStream " +
-                "select * " +
-                "insert into BarStream; ";
-        SiddhiManager siddhiManager = new SiddhiManager();
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(streams + query);
-        executionPlanRuntime.addCallback("BarStream", new StreamCallback() {
-            @Override
-            public void receive(Event[] events) {
-                EventPrinter.print(events);
-                for (Event event : events) {
-                    switch (count.incrementAndGet()) {
-                        case 1:
-                            org.junit.Assert.assertEquals(1496814501L, event.getData(0));
-                            break;
-                        case 2:
-                            org.junit.Assert.assertEquals(102.5f, event.getData(3));
-                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(5);
-                            org.junit.Assert.assertEquals("value111", arbitraryDataMap.get("key111"));
-                            break;
-                        default:
-                            org.junit.Assert.fail();
-                    }
-                }
-            }
-        });
-
-        Object mata2[] = {1496815144L};
-        Object correlation2[] = {"WRONG_IBM", 500.5f, 500};
-        Object payload2[] = {"WSO222", 102.5f, 52};
-        Map<String, String> arbitraryDataMap2 = new HashMap<>();
-        arbitraryDataMap2.put("key111", "value111");
-        arbitraryDataMap2.put("key222", "value222");
-        org.wso2.carbon.databridge.commons.Event tempWso2event = new org.wso2.carbon.databridge.commons.Event("org" +
-                ".wrongStreamName", 1496815276L, mata2, correlation2, payload2, arbitraryDataMap2);
-
-        executionPlanRuntime.start();
-        InMemoryBroker.publish("stock", wso2event);
-        InMemoryBroker.publish("stock", tempWso2event);
-        InMemoryBroker.publish("stock", wso2event2);
-        //assert event count
-        Assert.assertEquals("Number of events", 2, count.get());
         executionPlanRuntime.shutdown();
         siddhiManager.shutdown();
     }

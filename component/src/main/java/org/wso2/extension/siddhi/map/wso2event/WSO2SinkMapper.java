@@ -19,7 +19,6 @@ package org.wso2.extension.siddhi.map.wso2event;
 
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
-import org.wso2.extension.siddhi.map.wso2event.service.StreamDefinitionHolder;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
@@ -56,12 +55,6 @@ import java.util.TreeMap;
                 "extension to convert the Siddhi event to WSO2 event objects. Users can send pre-defined WSO2 event " +
                 "format which adheres from the defined stream.",
         parameters = {
-                @Parameter(name = "wso2event.stream.id",
-                        description =
-                                "Used to provide the outgoing event's wso2event stream id. This should only contain " +
-                                        "simple letters and should not be starting with numbers. " +
-                                        "eg: wso2.stream.id, wso2.st3eam.id is valid while, 2wso.stream.id is invalid",
-                        type = {DataType.STRING}),
                 @Parameter(name = "arbitrary.map",
                         description =
                                 "Used to provide the attribute name of the stream which the arbitrary object to be " +
@@ -72,8 +65,7 @@ import java.util.TreeMap;
         },
         examples = {
                 @Example(
-                        syntax = "@sink(type='wso2event', @map(type='wso2event', " +
-                                "wso2event.stream.id='barStream:1.0.0')); " +
+                        syntax = "@sink(type='wso2event', @map(type='wso2event')); " +
                                 "define stream FooStream (symbol string, price float, volume long);",
                         description = "Above configuration will do a WSO2 input mapping which will generate below " +
                                 "output" +
@@ -86,7 +78,6 @@ import java.util.TreeMap;
                                 "            }"),
                 @Example(
                         syntax = "@sink(type='wso2event', @map(type='wso2event',  " +
-                                "wso2event.stream.id='barStream:1.0.0', " +
                                 "arbitrary.map='arbitrary_object')) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long, arbitrary_object object);",
@@ -107,6 +98,7 @@ public class WSO2SinkMapper extends SinkMapper {
     private String outputStreamId;
     private Map<InputDataType, Map<Integer, Integer>> attributePositionMap = new HashMap<>();
     private int arbitraryAttributeIndex = -1;
+    private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
 
     @Override
     public String[] getSupportedDynamicOptions() {
@@ -128,8 +120,7 @@ public class WSO2SinkMapper extends SinkMapper {
             throw new ExecutionPlanValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         }
-        this.outputStreamId = optionHolder.validateAndGetStaticValue(Utils.WSO2_STREAM_ID_PARAMETER_NAME,
-                streamDefinition.getId() + Utils.STREAM_NAME_VER_DELIMITER + "1.0.0");
+
         String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
                 Utils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
         List<Attribute> attributeList = streamDefinition.getAttributeList();
@@ -176,14 +167,11 @@ public class WSO2SinkMapper extends SinkMapper {
             }
         }
 
-        String streamNameVersion[] = outputStreamId.split(Utils.STREAM_NAME_VER_DELIMITER);
         try {
-            org.wso2.carbon.databridge.commons.StreamDefinition wso2StreamDefinition = new org.wso2.carbon.databridge
-                    .commons.StreamDefinition(streamNameVersion[0], streamNameVersion[1]);
-            wso2StreamDefinition.setMetaData(metaAttributeList);
-            wso2StreamDefinition.setCorrelationData(correlationAttributeList);
-            wso2StreamDefinition.setPayloadData(payloadAttributeList);
-            StreamDefinitionHolder.setStreamDefinition(wso2StreamDefinition);
+            this.outputStreamId = streamDefinition.getId() + Utils.STREAM_NAME_VER_DELIMITER +
+                    Utils.DEFAULT_STREAM_VERSION;
+            this.streamDefinition = Utils.createWSO2EventStreamDefinition(streamDefinition.getId(), metaAttributeList,
+                    correlationAttributeList, payloadAttributeList);
         } catch (MalformedStreamDefinitionException e) {
             throw new ExecutionPlanValidationException(e.getMessage(), e);
         }
@@ -272,5 +260,9 @@ public class WSO2SinkMapper extends SinkMapper {
 
     private enum InputDataType {
         META_DATA, CORRELATION_DATA, PAYLOAD_DATA
+    }
+
+    public org.wso2.carbon.databridge.commons.StreamDefinition getWSO2StreamDefinition() {
+        return streamDefinition;
     }
 }

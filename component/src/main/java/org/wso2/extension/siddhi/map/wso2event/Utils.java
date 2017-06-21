@@ -21,14 +21,13 @@ package org.wso2.extension.siddhi.map.wso2event;
 import org.wso2.carbon.databridge.commons.AttributeType;
 import org.wso2.carbon.databridge.commons.StreamDefinition;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
-import org.wso2.extension.siddhi.map.wso2event.service.StreamDefinitionHolder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.List;
 
 class Utils {
     static final String STREAM_NAME_VER_DELIMITER = ":";
-    static final String WSO2_STREAM_ID_PARAMETER_NAME = "wso2event.stream.id";
+    static final String DEFAULT_STREAM_VERSION = "1.0.0";
     static final String ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME = "arbitrary.map";
     static final String META_DATA_PREFIX = "meta_";
     static final String CORRELATION_DATA_PREFIX = "correlation_";
@@ -70,17 +69,15 @@ class Utils {
     }
 
     static StreamDefinition createWSO2EventStreamDefinition(
-            String streamId, List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList,
+            String streamName, List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList,
             List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList,
             List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList)
             throws MalformedStreamDefinitionException {
-        String streamNameVersion[] = streamId.split(STREAM_NAME_VER_DELIMITER);
         org.wso2.carbon.databridge.commons.StreamDefinition wso2StreamDefinition = new org.wso2.carbon.databridge
-                .commons.StreamDefinition(streamNameVersion[0], streamNameVersion[1]);
+                .commons.StreamDefinition(streamName, DEFAULT_STREAM_VERSION);
         wso2StreamDefinition.setMetaData(metaAttributeList);
         wso2StreamDefinition.setCorrelationData(correlationAttributeList);
         wso2StreamDefinition.setPayloadData(payloadAttributeList);
-        StreamDefinitionHolder.setStreamDefinition(wso2StreamDefinition);
         return wso2StreamDefinition;
     }
 
