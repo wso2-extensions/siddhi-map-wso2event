@@ -79,7 +79,7 @@
         <carbon.feature.plugin.version>3.0.0</carbon.feature.plugin.version>
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <mavan.checkstyle.suppression.file>checkstyle-suppressions.xml</mavan.checkstyle.suppression.file>
-        <carbon.analytics.version>2.0.31-SNAPSHOT</carbon.analytics.version>
+        <carbon.analytics.version>2.0.38</carbon.analytics.version>
     </properties>
 
     <scm>
