@@ -111,7 +111,7 @@ public class WSO2SinkMapper extends SinkMapper {
      * @param streamDefinition       The stream definition
      * @param optionHolder           Option holder containing static and dynamic options
      * @param payloadTemplateBuilder Unmapped payload for reference
-     * @param mapperConfigReader Config
+     * @param mapperConfigReader     Config
      */
     @Override
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder,

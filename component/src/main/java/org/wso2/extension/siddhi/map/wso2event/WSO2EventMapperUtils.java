@@ -25,6 +25,9 @@ import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.List;
 
+/**
+ * Util class for WSO2EventMapper
+ */
 public class WSO2EventMapperUtils {
     public static final String STREAM_NAME_VER_DELIMITER = ":";
     public static final String DEFAULT_STREAM_VERSION = "1.0.0";
@@ -82,6 +85,9 @@ public class WSO2EventMapperUtils {
         return wso2StreamDefinition;
     }
 
+    /**
+     * Enum class which defines the WSO2Event Data Prefix
+     */
     public enum InputDataType {
         META_DATA, CORRELATION_DATA, PAYLOAD_DATA
     }
