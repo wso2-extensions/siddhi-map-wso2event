@@ -117,6 +117,10 @@ public class WSO2SourceMapper extends SourceMapper {
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, List<AttributeMapping>
             attributeMappingList, ConfigReader configReader) {
         attributeList = streamDefinition.getAttributeList();
+
+        //TODO - convert attributePositionMap in to list, loop through that and set values. Update : Seems like this is
+        // bit expensive operation compare to the current one then avoided it.
+
         attributePositionMap = new HashMap<>(attributeList.size());
         String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
                 WSO2EventMapperUtils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
