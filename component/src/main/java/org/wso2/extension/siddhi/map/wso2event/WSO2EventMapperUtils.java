@@ -25,19 +25,20 @@ import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.List;
 
-class Utils {
-    static final String STREAM_NAME_VER_DELIMITER = ":";
-    static final String DEFAULT_STREAM_VERSION = "1.0.0";
-    static final String ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME = "arbitrary.map";
-    static final String META_DATA_PREFIX = "meta_";
-    static final String CORRELATION_DATA_PREFIX = "correlation_";
+public class WSO2EventMapperUtils {
+    public static final String STREAM_NAME_VER_DELIMITER = ":";
+    public static final String DEFAULT_STREAM_VERSION = "1.0.0";
+    public static final String ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME = "arbitrary.map";
+    public static final String META_DATA_PREFIX = "meta_";
+    public static final String CORRELATION_DATA_PREFIX = "correlation_";
+
     /**
      * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}
      *
      * @param attribute Siddhi Event attribute object
      * @return the created WSO2 Event attribute
      */
-    static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(Attribute attribute) {
+    public static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(Attribute attribute) {
         org.wso2.carbon.databridge.commons.AttributeType attribute1;
         switch (attribute.getType()) {
             case BOOL:
@@ -68,7 +69,7 @@ class Utils {
         }
     }
 
-    static StreamDefinition createWSO2EventStreamDefinition(
+    public static StreamDefinition createWSO2EventStreamDefinition(
             String streamName, List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList,
             List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList,
             List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList)
@@ -81,7 +82,7 @@ class Utils {
         return wso2StreamDefinition;
     }
 
-    enum InputDataType {
+    public enum InputDataType {
         META_DATA, CORRELATION_DATA, PAYLOAD_DATA
     }
 }
