@@ -15,10 +15,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.extension.siddhi.map.wso2event;
+package org.wso2.extension.siddhi.map.wso2event.sink;
 
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
+import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
@@ -77,8 +78,7 @@ import java.util.TreeMap;
                                 "                 payloadData: [symbol, price, volume]\n" +
                                 "            }"),
                 @Example(
-                        syntax = "@sink(type='wso2event', @map(type='wso2event',  " +
-                                "arbitrary.map='arbitrary_object')) " +
+                        syntax = "@sink(type='wso2event', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long, arbitrary_object object);",
                         description = "Above configuration will perform a WSO2 mapping with the arbitrary object " +
@@ -94,9 +94,9 @@ import java.util.TreeMap;
         }
 )
 public class WSO2SinkMapper extends SinkMapper {
-    private static final Logger LOG = Logger.getLogger(WSO2SinkMapper.class);
+    private static final Logger LOGGER = Logger.getLogger(WSO2SinkMapper.class);
     private String outputStreamId;
-    private Map<InputDataType, Map<Integer, Integer>> attributePositionMap = new HashMap<>();
+    private Map<WSO2EventMapperUtils.InputDataType, Map<Integer, Integer>> attributePositionMap = new HashMap<>();
     private int arbitraryAttributeIndex = -1;
     private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
 
@@ -111,7 +111,7 @@ public class WSO2SinkMapper extends SinkMapper {
      * @param streamDefinition       The stream definition
      * @param optionHolder           Option holder containing static and dynamic options
      * @param payloadTemplateBuilder Unmapped payload for reference
-     * @param mapperConfigReader
+     * @param mapperConfigReader     Config
      */
     @Override
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder,
@@ -122,7 +122,7 @@ public class WSO2SinkMapper extends SinkMapper {
         }
 
         String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
-                Utils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
+                WSO2EventMapperUtils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
         List<Attribute> attributeList = streamDefinition.getAttributeList();
         Map<Integer, Integer> payloadDataMap = new TreeMap<Integer, Integer>();
         Map<Integer, Integer> metaDataMap = new TreeMap<Integer, Integer>();
@@ -133,16 +133,16 @@ public class WSO2SinkMapper extends SinkMapper {
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
         org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
         for (int i = 0; i < attributeList.size(); i++) {
-            if (attributeList.get(i).getName().startsWith(Utils.META_DATA_PREFIX)) {
+            if (attributeList.get(i).getName().startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
-                wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
+                wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
                 if (null != wso2eventAttribute) {
                     metaAttributeList.add(wso2eventAttribute);
                 }
                 metaDataMap.put(metaCount, i);
                 metaCount++;
-            } else if (attributeList.get(i).getName().startsWith(Utils.CORRELATION_DATA_PREFIX)) {
-                wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
+            } else if (attributeList.get(i).getName().startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
+                wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
                 if (null != wso2eventAttribute) {
                     correlationAttributeList.add(wso2eventAttribute);
                 }
@@ -158,7 +158,7 @@ public class WSO2SinkMapper extends SinkMapper {
                             Type.OBJECT);
                 }
             } else {
-                wso2eventAttribute = Utils.createWso2EventAttribute(attributeList.get(i));
+                wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
                 if (null != wso2eventAttribute) {
                     payloadAttributeList.add(wso2eventAttribute);
                 }
@@ -168,21 +168,21 @@ public class WSO2SinkMapper extends SinkMapper {
         }
 
         try {
-            this.outputStreamId = streamDefinition.getId() + Utils.STREAM_NAME_VER_DELIMITER +
-                    Utils.DEFAULT_STREAM_VERSION;
-            this.streamDefinition = Utils.createWSO2EventStreamDefinition(streamDefinition.getId(), metaAttributeList,
-                    correlationAttributeList, payloadAttributeList);
+            this.outputStreamId = streamDefinition.getId() + WSO2EventMapperUtils.STREAM_NAME_VER_DELIMITER +
+                    WSO2EventMapperUtils.DEFAULT_STREAM_VERSION;
+            this.streamDefinition = WSO2EventMapperUtils.createWSO2EventStreamDefinition(streamDefinition.getId(),
+                    metaAttributeList, correlationAttributeList, payloadAttributeList);
         } catch (MalformedStreamDefinitionException e) {
             throw new SiddhiAppValidationException(e.getMessage(), e);
         }
         if (0 < metaDataMap.size()) {
-            attributePositionMap.put(InputDataType.META_DATA, metaDataMap);
+            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.META_DATA, metaDataMap);
         }
         if (0 < correlationDataMap.size()) {
-            attributePositionMap.put(InputDataType.CORRELATION_DATA, correlationDataMap);
+            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.CORRELATION_DATA, correlationDataMap);
         }
         if (0 < payloadDataMap.size()) {
-            attributePositionMap.put(InputDataType.PAYLOAD_DATA, payloadDataMap);
+            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.PAYLOAD_DATA, payloadDataMap);
         }
     }
 
@@ -225,9 +225,12 @@ public class WSO2SinkMapper extends SinkMapper {
         wso2event.setStreamId(outputStreamId);
         Object[] eventData = event.getData();
         if (eventData.length > 0) {
-            Map<Integer, Integer> metaPositions = attributePositionMap.get(InputDataType.META_DATA);
-            Map<Integer, Integer> correlationPositions = attributePositionMap.get(InputDataType.CORRELATION_DATA);
-            Map<Integer, Integer> payloadPositions = attributePositionMap.get(InputDataType.PAYLOAD_DATA);
+            Map<Integer, Integer> metaPositions = attributePositionMap.get(WSO2EventMapperUtils.
+                    InputDataType.META_DATA);
+            Map<Integer, Integer> correlationPositions = attributePositionMap.get(WSO2EventMapperUtils.
+                    InputDataType.CORRELATION_DATA);
+            Map<Integer, Integer> payloadPositions = attributePositionMap.get(WSO2EventMapperUtils.
+                    InputDataType.PAYLOAD_DATA);
             if (null != metaPositions) {
                 Object[] metaArray = new Object[metaPositions.size()];
                 for (Map.Entry<Integer, Integer> entry : metaPositions.entrySet()) {
@@ -256,10 +259,6 @@ public class WSO2SinkMapper extends SinkMapper {
             }
         }
         return wso2event;
-    }
-
-    private enum InputDataType {
-        META_DATA, CORRELATION_DATA, PAYLOAD_DATA
     }
 
     public org.wso2.carbon.databridge.commons.StreamDefinition getWSO2StreamDefinition() {

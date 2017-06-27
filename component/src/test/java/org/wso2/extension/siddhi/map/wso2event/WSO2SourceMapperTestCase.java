@@ -136,7 +136,7 @@ public class WSO2SourceMapperTestCase {
     @Test
     public void testWSO2InputMappingDefaultWithoutStreamId() throws InterruptedException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
-                "values WITHOUT mentioning wso2.stream.id");
+                "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
