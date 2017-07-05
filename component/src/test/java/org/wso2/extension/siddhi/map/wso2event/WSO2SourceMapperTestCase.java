@@ -39,36 +39,58 @@ public class WSO2SourceMapperTestCase {
     private org.wso2.carbon.databridge.commons.Event wso2event;
     private org.wso2.carbon.databridge.commons.Event wso2event1;
     private org.wso2.carbon.databridge.commons.Event wso2event2;
+    private org.wso2.carbon.databridge.commons.Event wso2event3;
+    private org.wso2.carbon.databridge.commons.Event wso2event4;
+    private org.wso2.carbon.databridge.commons.Event wso2event5;
+    private org.wso2.carbon.databridge.commons.Event wso2event6;
+    private org.wso2.carbon.databridge.commons.Event wso2eventWithoutPayloadAttribute;
 
     @BeforeMethod
     public void init() {
         count.set(0);
-        Object mata[] = {1496814501L};
+        Object meta[] = {1496814501L};
         Object correlation[] = {"IBM", 500.5f, 500};
         Object payload[] = {"WSO2", 100.5f, 50};
         Map<String, String> arbitraryDataMap = new HashMap<>();
         arbitraryDataMap.put("key1", "value1");
         arbitraryDataMap.put("key2", "value2");
         wso2event = new org.wso2.carbon.databridge.commons.Event("org" +
-                ".fooStream:1.0.0", 1496814773L, mata, correlation, payload, arbitraryDataMap);
+                ".fooStream:1.0.0", 1496814773L, meta, correlation, payload, arbitraryDataMap);
 
-        Object mata1[] = {1496815144L};
+        Object meta1[] = {1496815144L};
         Object correlation1[] = {"IBM", 500.5f, 500};
         Object payload1[] = {"WSO22", 101.5f, 51};
         Map<String, String> arbitraryDataMap1 = new HashMap<>();
         arbitraryDataMap1.put("key11", "value11");
         arbitraryDataMap1.put("key22", "value22");
         wso2event1 = new org.wso2.carbon.databridge.commons.Event("org" +
-                ".fooStream:1.0.0", 1496815276L, mata1, correlation1, payload1, arbitraryDataMap1);
+                ".fooStream:1.0.0", 1496815276L, meta1, correlation1, payload1, arbitraryDataMap1);
 
-        Object mata2[] = {1496815144L};
+        Object meta2[] = {1496815144L};
         Object correlation2[] = {"IBM", 500.5f, 500};
         Object payload2[] = {"WSO222", 102.5f, 52};
         Map<String, String> arbitraryDataMap2 = new HashMap<>();
         arbitraryDataMap2.put("key111", "value111");
         arbitraryDataMap2.put("key222", "value222");
         wso2event2 = new org.wso2.carbon.databridge.commons.Event("org" +
-                ".fooStream:1.0.0", 1496815276L, mata2, correlation2, payload2, arbitraryDataMap2);
+                ".fooStream:1.0.0", 1496815276L, meta2, correlation2, payload2, arbitraryDataMap2);
+
+        wso2event3 = new org.wso2.carbon.databridge.commons.Event("org.fooStream:1.0.0",
+                1496815276L, null, correlation2, payload2, null);
+
+        wso2event4 = new org.wso2.carbon.databridge.commons.Event("org.fooStream:1.0.0",
+                1496815276L, meta2, null, payload2, null);
+
+        wso2event5 = new org.wso2.carbon.databridge.commons.Event("org.fooStream:1.0.0",
+                1496815276L, null, null, payload2, arbitraryDataMap2);
+
+        Object meta3[] = {1496815144L, 14968333333L};
+        wso2event6 = new org.wso2.carbon.databridge.commons.Event("org.fooStream:1.0.0",
+                1496815276L, meta3, correlation2, payload2, arbitraryDataMap2);
+
+
+        wso2eventWithoutPayloadAttribute = new org.wso2.carbon.databridge.commons.Event("org" +
+                ".fooStream:1.0.0", 1496814773L, meta, correlation, null, arbitraryDataMap);
     }
 
     /**
@@ -132,6 +154,258 @@ public class WSO2SourceMapperTestCase {
         siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
+
+    @Test
+    public void testWSO2InputMappingDefaultWithCorrelationAttribute() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with correlation and payload " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
+                "define stream FooStream (correlation_symbol string, symbol string, price float, volume int); " +
+                "define stream BarStream (correlation_symbol string, symbol string, price float, volume int); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals("IBM", event.getData(0));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event3);
+
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test
+    public void testWSO2InputMappingDefaultWithMetaAttribute() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with meta and payload " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
+                "define stream FooStream (meta_timestamp long, symbol string, price float, volume int); " +
+                "define stream BarStream (meta_timestamp long, symbol string, price float, volume int); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(1496815144L, event.getData(0));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event4);
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test
+    public void testWSO2InputMappingDefaultWithArbitraryAttributes() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with payload and arbitrary " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
+                "arbitrary.map='arbitrary_object')) " +
+                "define stream FooStream (symbol string, price float, volume int, arbitrary_object object); " +
+                "define stream BarStream (symbol string, price float, volume int, arbitrary_object object); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(102.5f, event.getData(1));
+                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(3);
+                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event5);
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test
+    public void testWSO2InputMappingDefaultWithMultiMetaAttributes() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
+                "arbitrary.map='arbitrary_object')) " +
+                "define stream FooStream (meta_timestamp long, meta_timestamp2 long, correlation_symbol string, " +
+                "symbol string, price float, volume int, arbitrary_object object); " +
+                "define stream BarStream (meta_timestamp long, meta_timestamp2 long, correlation_symbol string, " +
+                "symbol string, price float, volume int, arbitrary_object object); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(1496815144L, event.getData(0));
+                            AssertJUnit.assertEquals(14968333333L, event.getData(1));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event6);
+
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test
+    public void testWSO2InputMappingDefaultWithoutPayloadAttribute() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping without payload values " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
+                "arbitrary.map='arbitrary_object')) " +
+                "define stream FooStream (meta_timestamp long, correlation_symbol string, arbitrary_object object); " +
+                "define stream BarStream (meta_timestamp long, correlation_symbol string, arbitrary_object object); ";
+
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(1496814501L, event.getData(0));
+                            break;
+                        case 2:
+                            AssertJUnit.assertEquals("IBM", event.getData(1));
+                            break;
+                        case 3:
+                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(3);
+                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2eventWithoutPayloadAttribute);
+
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test
+    public void testWSO2InputMappingDefaultForSingleEvent() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
+                "arbitrary.map='arbitrary_object')) " +
+                "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
+                "price float, volume int, arbitrary_object object); " +
+                "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, " +
+                "price float, volume int, arbitrary_object object); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(1496814501L, event.getData(0));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event);
+
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
 
     @Test
     public void testWSO2InputMappingDefaultWithoutStreamId() throws InterruptedException {
