@@ -24,12 +24,11 @@ import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
 import org.wso2.siddhi.annotation.util.DataType;
+import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.exception.ConnectionUnavailableException;
 import org.wso2.siddhi.core.stream.output.sink.SinkListener;
 import org.wso2.siddhi.core.stream.output.sink.SinkMapper;
 import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.transport.DynamicOptions;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -105,18 +104,25 @@ public class WSO2SinkMapper extends SinkMapper {
         return new String[0];
     }
 
+    @Override
+    public Class[] getOutputEventClasses() {
+        return new Class[]{org.wso2.carbon.databridge.commons.Event.class,
+                org.wso2.carbon.databridge.commons.Event[].class};
+    }
+
     /**
      * Initialize the mapper and the mapping configurations.
      *
-     * @param streamDefinition       The stream definition
-     * @param optionHolder           Option holder containing static and dynamic options
-     * @param payloadTemplateBuilder Unmapped payload for reference
-     * @param mapperConfigReader     Config
+     * @param streamDefinition The stream definition
+     * @param optionHolder     Option holder containing static and dynamic options
+     * @param templateBuilder  Unmapped payload for reference
+     * @param configReader     Config
+     * @param siddhiAppContext SiddhiApp context
      */
     @Override
-    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder,
-                     TemplateBuilder payloadTemplateBuilder, ConfigReader mapperConfigReader) {
-        if (payloadTemplateBuilder != null) {   //custom mapping
+    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, TemplateBuilder templateBuilder,
+                     ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+        if (templateBuilder != null) {   //custom mapping
             throw new SiddhiAppValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         }
@@ -187,29 +193,27 @@ public class WSO2SinkMapper extends SinkMapper {
     }
 
     @Override
-    public void mapAndSend(Event event, OptionHolder optionHolder, TemplateBuilder payloadTemplateBuilder,
-                           SinkListener sinkListener, DynamicOptions dynamicOptions)
-            throws ConnectionUnavailableException {
-        sinkListener.publish(constructDefaultMapping(event), dynamicOptions);
+    public void mapAndSend(Event event, OptionHolder optionHolder, TemplateBuilder templateBuilder,
+                           SinkListener sinkListener) {
+        sinkListener.publish(constructDefaultMapping(event));
     }
 
     /**
      * Map and publish the given {@link Event} array
      *
-     * @param events                 Event object array
-     * @param optionHolder           option holder containing static and dynamic options
-     * @param payloadTemplateBuilder Unmapped payload for reference
-     * @param sinkListener           output transport callback
+     * @param events          Event object array
+     * @param optionHolder    option holder containing static and dynamic options
+     * @param templateBuilder Unmapped payload for reference
+     * @param sinkListener    output transport callback
      */
     @Override
-    public void mapAndSend(Event[] events, OptionHolder optionHolder, TemplateBuilder payloadTemplateBuilder,
-                           SinkListener sinkListener, DynamicOptions dynamicOptions)
-            throws ConnectionUnavailableException {
+    public void mapAndSend(Event[] events, OptionHolder optionHolder, TemplateBuilder templateBuilder,
+                           SinkListener sinkListener) {
         if (events.length < 1) {        //todo valid case?
             return;
         }
         for (Event event : events) {
-            sinkListener.publish(constructDefaultMapping(event), dynamicOptions);
+            sinkListener.publish(constructDefaultMapping(event));
         }
     }
 

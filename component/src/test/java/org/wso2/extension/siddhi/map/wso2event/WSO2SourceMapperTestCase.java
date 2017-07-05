@@ -19,9 +19,9 @@
 package org.wso2.extension.siddhi.map.wso2event;
 
 import org.apache.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
@@ -40,7 +40,7 @@ public class WSO2SourceMapperTestCase {
     private org.wso2.carbon.databridge.commons.Event wso2event1;
     private org.wso2.carbon.databridge.commons.Event wso2event2;
 
-    @Before
+    @BeforeMethod
     public void init() {
         count.set(0);
         Object mata[] = {1496814501L};
@@ -107,18 +107,18 @@ public class WSO2SourceMapperTestCase {
                 for (Event event : events) {
                     switch (count.incrementAndGet()) {
                         case 1:
-                            org.junit.Assert.assertEquals(1496814501L, event.getData(0));
+                            AssertJUnit.assertEquals(1496814501L, event.getData(0));
                             break;
                         case 2:
-                            org.junit.Assert.assertEquals("IBM", event.getData(1));
+                            AssertJUnit.assertEquals("IBM", event.getData(1));
                             break;
                         case 3:
-                            org.junit.Assert.assertEquals(102.5f, event.getData(3));
+                            AssertJUnit.assertEquals(102.5f, event.getData(3));
                             Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(5);
-                            org.junit.Assert.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
@@ -128,7 +128,7 @@ public class WSO2SourceMapperTestCase {
         InMemoryBroker.publish("stock", wso2event1);
         InMemoryBroker.publish("stock", wso2event2);
         //assert event count
-        Assert.assertEquals("Number of events", 3, count.get());
+        AssertJUnit.assertEquals("Number of events", 3, count.get());
         siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
@@ -157,18 +157,18 @@ public class WSO2SourceMapperTestCase {
                 for (Event event : events) {
                     switch (count.incrementAndGet()) {
                         case 1:
-                            org.junit.Assert.assertEquals(1496814501L, event.getData(0));
+                            AssertJUnit.assertEquals(1496814501L, event.getData(0));
                             break;
                         case 2:
-                            org.junit.Assert.assertEquals("IBM", event.getData(1));
+                            AssertJUnit.assertEquals("IBM", event.getData(1));
                             break;
                         case 3:
-                            org.junit.Assert.assertEquals(102.5f, event.getData(3));
+                            AssertJUnit.assertEquals(102.5f, event.getData(3));
                             Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(5);
-                            org.junit.Assert.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
                             break;
                         default:
-                            org.junit.Assert.fail();
+                            AssertJUnit.fail();
                     }
                 }
             }
@@ -181,7 +181,7 @@ public class WSO2SourceMapperTestCase {
         wso2event2.setStreamId("FooStream:1.0.0");
         InMemoryBroker.publish("stock", wso2event2);
         //assert event count
-        Assert.assertEquals("Number of events", 3, count.get());
+        AssertJUnit.assertEquals("Number of events", 3, count.get());
         siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }

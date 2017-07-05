@@ -47,15 +47,15 @@
                 <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <scope>test</scope>
-                <version>${junit.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon.analytics</groupId>
                 <artifactId>org.wso2.carbon.databridge.commons</artifactId>
                 <version>${carbon.analytics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -72,7 +72,7 @@
         </pluginManagement>
     </build>
     <properties>
-        <siddhi.version>4.0.0-M8</siddhi.version>
+        <siddhi.version>4.0.0-M13</siddhi.version>
         <wso2event.mapper.bundle.version>4.0.0.M5-SNAPSHOT</wso2event.mapper.bundle.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <junit.version>4.12</junit.version>
@@ -80,6 +80,7 @@
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <mavan.checkstyle.suppression.file>checkstyle-suppressions.xml</mavan.checkstyle.suppression.file>
         <carbon.analytics.version>2.0.38</carbon.analytics.version>
+        <testng.version>6.9.4</testng.version>
     </properties>
 
     <scm>

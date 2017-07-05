@@ -25,9 +25,10 @@ import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
 import org.wso2.siddhi.annotation.util.DataType;
+import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.stream.AttributeMapping;
-import org.wso2.siddhi.core.stream.input.InputEventHandler;
+import org.wso2.siddhi.core.stream.input.source.AttributeMapping;
+import org.wso2.siddhi.core.stream.input.source.InputEventHandler;
 import org.wso2.siddhi.core.stream.input.source.SourceMapper;
 import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
@@ -110,12 +111,13 @@ public class WSO2SourceMapper extends SourceMapper {
      *
      * @param streamDefinition     the StreamDefinition
      * @param optionHolder         mapping options
-     * @param attributeMappingList list of attributes mapping
-     * @param configReader
+     * @param list list of attributes mapping
+     * @param configReader Deployment Config Reader
+     * @param  siddhiAppContext Siddhi App context
      */
     @Override
-    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, List<AttributeMapping>
-            attributeMappingList, ConfigReader configReader) {
+    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, List<AttributeMapping> list,
+                     ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
         attributeList = streamDefinition.getAttributeList();
 
         //TODO - convert attributePositionMap in to list, loop through that and set values. Update : Seems like this is
@@ -132,7 +134,7 @@ public class WSO2SourceMapper extends SourceMapper {
         List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList = new ArrayList<>();
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
         org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
-        if (attributeMappingList != null && attributeMappingList.size() > 0) {
+        if (list != null && list.size() > 0) {
             throw new SiddhiAppValidationException("WSO2 Transport does not support custom mapping. Please remove" +
                     " @attributes section in mapping.");
         } else {
@@ -241,4 +243,10 @@ public class WSO2SourceMapper extends SourceMapper {
     public org.wso2.carbon.databridge.commons.StreamDefinition getWSO2StreamDefinition() {
         return this.streamDefinition;
     }
+
+    @Override
+    public Class[] getSupportedInputEventClasses() {
+        return new Class[]{org.wso2.carbon.databridge.commons.Event.class};
+    }
+
 }
