@@ -59,6 +59,20 @@
     </dependencyManagement>
 
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wso2.siddhi</groupId>
+                <artifactId>siddhi-doc-gen</artifactId>
+                <version>${siddhi.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-md-docs</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -70,7 +84,7 @@
         </pluginManagement>
     </build>
     <properties>
-        <siddhi.version>4.0.0-M13</siddhi.version>
+        <siddhi.version>4.0.0-M15-SNAPSHOT</siddhi.version>
         <wso2event.mapper.bundle.version>4.0.0.M5-SNAPSHOT</wso2event.mapper.bundle.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <junit.version>4.12</junit.version>

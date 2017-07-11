@@ -11,3 +11,7 @@ events to/from Siddhi events. This repository can be independently released from
 **We welcome your feedback and contribution.**
 
 Siddhi SP Team
+
+## API Docs:
+
+1. <a href="./api/4.0.1-SNAPSHOT.md">4.0.1-SNAPSHOT</a>

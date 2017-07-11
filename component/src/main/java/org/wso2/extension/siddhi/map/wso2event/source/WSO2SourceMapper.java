@@ -55,12 +55,14 @@ import java.util.TreeMap;
                 "conversion will happen without any configs.",
         parameters = {
                 @Parameter(name = "arbitrary.map",
-                        description =
+                           description =
                                 "Used to provide the attribute name of the stream which the arbitrary object to be " +
                                         "mapped" +
                                         "eg: arbitrary.map='foo' foo is a attribute name in the stream definition " +
                                         "with the attribute type object",
-                        type = {DataType.STRING})
+                           type = {DataType.STRING},
+                           optional = true,
+                           defaultValue = "null")
         },
         examples = {
                 @Example(
@@ -68,14 +70,14 @@ import java.util.TreeMap;
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long);",
                         description = "Above configuration will do a WSO2 mapping. Expected input will look like " +
-                                "below." +
-                                "Wso2event = {" +
+                                "below.\n" +
+                                "Wso2event = {\n" +
                                 "                streamId: org.wso2event.fooStream:1.0.0,\n" +
-                                "                timeStamp: 431434134134,\n" +
+                                "                timestamp: 431434134134,\n" +
                                 "                metaData: [timestamp, meta_object2],\n" +
                                 "                correlationData: [correlation_object1],\n" +
                                 "                payloadData: [symbol, price, volume]\n" +
-                                "            }" +
+                                "            }\n" +
                                 "There can be at least the number of attributes of each type (meta, " +
                                 "correlation, payload) or more than defined in the stream definition" +
                                 " eg: metaData array has more than meta attributes defined and payloadData " +
@@ -85,15 +87,15 @@ import java.util.TreeMap;
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long, arbitrary_object object)); ",
                         description = "Above configuration will do a WSO2 mapping which also expects an arbitrary " +
-                                "map. Expected input will look like below." +
-                                "Wso2event = {" +
+                                "map. Expected input will look like below.\n" +
+                                "Wso2event = {\n" +
                                 "                streamId: org.wso2event.fooStream:1.0.0,\n" +
                                 "                timeStamp: 431434134134,\n" +
                                 "                metaData: [timestamp, meta_object2],\n" +
                                 "                correlationData: [correlation_object1],\n" +
                                 "                payloadData: [symbol, price, volume],\n" +
                                 "                arbitraryDataMap: objectMap,\n" +
-                                "            }" +
+                                "            }\n" +
                                 "The WSO2 mapper will get the arbitrary map in the WSO2 event. And assign its" +
                                 " value. If the map is not defined, the Siddhi events arbitrary object value " +
                                 "would be assigned as null"),

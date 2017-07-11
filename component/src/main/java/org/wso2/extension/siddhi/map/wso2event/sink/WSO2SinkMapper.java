@@ -56,40 +56,42 @@ import java.util.TreeMap;
                 "format which adheres from the defined stream.",
         parameters = {
                 @Parameter(name = "arbitrary.map",
-                        description =
+                           description =
                                 "Used to provide the attribute name of the stream which the arbitrary object to be " +
                                         "mapped from" +
                                         "eg: arbitrary.map='foo' foo is a attribute name in the stream definition " +
                                         "with the attribute type object",
-                        type = {DataType.STRING})
+                           type = {DataType.STRING},
+                           optional = true,
+                           defaultValue = "null")
         },
         examples = {
                 @Example(
                         syntax = "@sink(type='wso2event', @map(type='wso2event')); " +
                                 "define stream FooStream (symbol string, price float, volume long);",
                         description = "Above configuration will do a WSO2 input mapping which will generate below " +
-                                "output" +
-                                "Wso2event = {" +
+                                "output.\n" +
+                                "Wso2event = {\n" +
                                 "                 streamId: barStream:1.0.0,\n" +
-                                "                 timeStamp: FooStream_siddhi_event_timestamp,\n" +
+                                "                 timestamp: FooStream_siddhi_event_timestamp,\n" +
                                 "                 metaData: [],\n" +
                                 "                 correlationData: [],\n" +
                                 "                 payloadData: [symbol, price, volume]\n" +
-                                "            }"),
+                                "            }\n"),
                 @Example(
                         syntax = "@sink(type='wso2event', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long, arbitrary_object object);",
                         description = "Above configuration will perform a WSO2 mapping with the arbitrary object " +
-                                "which will produce below output WSO2 event message" +
-                                "Wso2event = {" +
+                                "which will produce below output WSO2 event message.\n" +
+                                "Wso2event = {\n" +
                                 "                 streamId: barStream:1.0.0,\n" +
                                 "                 timeStamp: FooStream_siddhi_event_timestamp,\n" +
                                 "                 metaData: [meta_timestamp],\n" +
                                 "                 correlationData: [],\n" +
                                 "                 payloadData: [symbol, price, volume],\n" +
                                 "                 arbitraryDataMap: arbitrary\n" +
-                                "            }")
+                                "            }\n")
         }
 )
 public class WSO2SinkMapper extends SinkMapper {
