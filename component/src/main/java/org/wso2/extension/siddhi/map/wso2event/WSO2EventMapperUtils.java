@@ -21,6 +21,7 @@ package org.wso2.extension.siddhi.map.wso2event;
 import org.wso2.carbon.databridge.commons.AttributeType;
 import org.wso2.carbon.databridge.commons.StreamDefinition;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.List;
@@ -63,13 +64,12 @@ public class WSO2EventMapperUtils {
                 attribute1 = AttributeType.DOUBLE;
                 break;
             default:
-                attribute1 = null;
+                throw new SiddhiAppCreationException("Attribute type is not valid when converting to data bridge " +
+                        "attribute. Found attribute,  Name : '" + attribute.getName() + "', " +
+                        "Type: '" + attribute.getType() + "'");
         }
-        if (null != attribute1) {
-            return new org.wso2.carbon.databridge.commons.Attribute(attribute.getName(), attribute1);
-        } else {
-            return null;
-        }
+
+        return new org.wso2.carbon.databridge.commons.Attribute(attribute.getName(), attribute1);
     }
 
     public static StreamDefinition createWSO2EventStreamDefinition(
@@ -85,10 +85,4 @@ public class WSO2EventMapperUtils {
         return wso2StreamDefinition;
     }
 
-    /**
-     * Enum class which defines the WSO2Event Data Prefix
-     */
-    public enum InputDataType {
-        META_DATA, CORRELATION_DATA, PAYLOAD_DATA
-    }
 }

@@ -17,7 +17,6 @@
  */
 package org.wso2.extension.siddhi.map.wso2event.sink;
 
-import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
 import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
@@ -37,7 +36,6 @@ import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -56,14 +54,14 @@ import java.util.TreeMap;
                 "format which adheres from the defined stream.",
         parameters = {
                 @Parameter(name = "arbitrary.map",
-                           description =
+                        description =
                                 "Used to provide the attribute name of the stream which the arbitrary object to be " +
                                         "mapped from" +
                                         "eg: arbitrary.map='foo' foo is a attribute name in the stream definition " +
                                         "with the attribute type object",
-                           type = {DataType.STRING},
-                           optional = true,
-                           defaultValue = "null")
+                        type = {DataType.STRING},
+                        optional = true,
+                        defaultValue = "null")
         },
         examples = {
                 @Example(
@@ -95,11 +93,14 @@ import java.util.TreeMap;
         }
 )
 public class WSO2SinkMapper extends SinkMapper {
-    private static final Logger LOGGER = Logger.getLogger(WSO2SinkMapper.class);
-    private String outputStreamId;
-    private Map<WSO2EventMapperUtils.InputDataType, Map<Integer, Integer>> attributePositionMap = new HashMap<>();
-    private int arbitraryAttributeIndex = -1;
+
     private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
+    private String outputStreamId;
+
+    private Map<Integer, Integer> metaDataMap;
+    private Map<Integer, Integer> correlationDataMap;
+    private Map<Integer, Integer> payloadDataMap;
+    private int arbitraryAttributeIndex = -1;
 
     @Override
     public String[] getSupportedDynamicOptions() {
@@ -132,45 +133,38 @@ public class WSO2SinkMapper extends SinkMapper {
         String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
                 WSO2EventMapperUtils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
         List<Attribute> attributeList = streamDefinition.getAttributeList();
-        Map<Integer, Integer> payloadDataMap = new TreeMap<Integer, Integer>();
-        Map<Integer, Integer> metaDataMap = new TreeMap<Integer, Integer>();
-        Map<Integer, Integer> correlationDataMap = new TreeMap<Integer, Integer>();
+        this.metaDataMap = new TreeMap<>();
+        this.correlationDataMap = new TreeMap<>();
+        this.payloadDataMap = new TreeMap<>();
+
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
         List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList = new ArrayList<>();
         List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList = new ArrayList<>();
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
-        org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
+
         for (int i = 0; i < attributeList.size(); i++) {
-            if (attributeList.get(i).getName().startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
+            Attribute attribute = attributeList.get(i);
+            if (attribute.getName().startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
-                wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
-                if (null != wso2eventAttribute) {
-                    metaAttributeList.add(wso2eventAttribute);
-                }
-                metaDataMap.put(metaCount, i);
+                metaAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
+                this.metaDataMap.put(metaCount, i);
                 metaCount++;
-            } else if (attributeList.get(i).getName().startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
-                wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
-                if (null != wso2eventAttribute) {
-                    correlationAttributeList.add(wso2eventAttribute);
-                }
-                correlationDataMap.put(correlationCount, i);
+            } else if (attribute.getName().startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
+                correlationAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
+                this.correlationDataMap.put(correlationCount, i);
                 correlationCount++;
             } else if (null != arbitraryAttributeName &&
-                    attributeList.get(i).getName().equals(arbitraryAttributeName)) {
-                if (Type.OBJECT.equals(attributeList.get(i).getType())) {
-                    arbitraryAttributeIndex = i;
+                    attribute.getName().equals(arbitraryAttributeName)) {
+                if (Type.OBJECT.equals(attribute.getType())) {
+                    this.arbitraryAttributeIndex = i;
                 } else {
                     throw new SiddhiAppValidationException("defined arbitrary.map attribute in the " +
-                            "mapping is type: " + attributeList.get(i).getType() + ". It should be type: " +
+                            "mapping is type: " + attribute.getType() + ". It should be type: " +
                             Type.OBJECT);
                 }
             } else {
-                wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
-                if (null != wso2eventAttribute) {
-                    payloadAttributeList.add(wso2eventAttribute);
-                }
-                payloadDataMap.put(payloadCount, i);
+                payloadAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
+                this.payloadDataMap.put(payloadCount, i);
                 payloadCount++;
             }
         }
@@ -182,15 +176,6 @@ public class WSO2SinkMapper extends SinkMapper {
                     metaAttributeList, correlationAttributeList, payloadAttributeList);
         } catch (MalformedStreamDefinitionException e) {
             throw new SiddhiAppValidationException(e.getMessage(), e);
-        }
-        if (0 < metaDataMap.size()) {
-            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.META_DATA, metaDataMap);
-        }
-        if (0 < correlationDataMap.size()) {
-            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.CORRELATION_DATA, correlationDataMap);
-        }
-        if (0 < payloadDataMap.size()) {
-            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.PAYLOAD_DATA, payloadDataMap);
         }
     }
 
@@ -211,9 +196,6 @@ public class WSO2SinkMapper extends SinkMapper {
     @Override
     public void mapAndSend(Event[] events, OptionHolder optionHolder, TemplateBuilder templateBuilder,
                            SinkListener sinkListener) {
-        if (events.length < 1) {        //todo valid case?
-            return;
-        }
         for (Event event : events) {
             sinkListener.publish(constructDefaultMapping(event));
         }
@@ -228,40 +210,31 @@ public class WSO2SinkMapper extends SinkMapper {
     private org.wso2.carbon.databridge.commons.Event constructDefaultMapping(Event event) {
         org.wso2.carbon.databridge.commons.Event wso2event = new org.wso2.carbon.databridge.commons.Event();
         wso2event.setTimeStamp(event.getTimestamp());
-        wso2event.setStreamId(outputStreamId);
+        wso2event.setStreamId(this.outputStreamId);
         Object[] eventData = event.getData();
         if (eventData.length > 0) {
-            Map<Integer, Integer> metaPositions = attributePositionMap.get(WSO2EventMapperUtils.
-                    InputDataType.META_DATA);
-            Map<Integer, Integer> correlationPositions = attributePositionMap.get(WSO2EventMapperUtils.
-                    InputDataType.CORRELATION_DATA);
-            Map<Integer, Integer> payloadPositions = attributePositionMap.get(WSO2EventMapperUtils.
-                    InputDataType.PAYLOAD_DATA);
-            if (null != metaPositions) {
-                Object[] metaArray = new Object[metaPositions.size()];
-                for (Map.Entry<Integer, Integer> entry : metaPositions.entrySet()) {
-                    metaArray[entry.getKey()] = eventData[entry.getValue()];
-                }
-                wso2event.setMetaData(metaArray);
+
+            Object[] metaArray = new Object[this.metaDataMap.size()];
+            for (Map.Entry<Integer, Integer> entry : this.metaDataMap.entrySet()) {
+                metaArray[entry.getKey()] = eventData[entry.getValue()];
             }
-            if (null != correlationPositions) {
-                Object[] correlationArray = new Object[correlationPositions.size()];
-                for (Map.Entry<Integer, Integer> entry : correlationPositions.entrySet()) {
-                    correlationArray[entry.getKey()] = eventData[entry.getValue()];
-                }
-                wso2event.setCorrelationData(correlationArray);
+            wso2event.setMetaData(metaArray);
+
+            Object[] correlationArray = new Object[this.correlationDataMap.size()];
+            for (Map.Entry<Integer, Integer> entry : this.correlationDataMap.entrySet()) {
+                correlationArray[entry.getKey()] = eventData[entry.getValue()];
             }
-            if (null != payloadPositions) {
-                Object[] payloadArray = new Object[payloadPositions.size()];
-                for (Map.Entry<Integer, Integer> entry : payloadPositions.entrySet()) {
-                    payloadArray[entry.getKey()] = eventData[entry.getValue()];
-                }
-                wso2event.setPayloadData(payloadArray);
+            wso2event.setCorrelationData(correlationArray);
+
+            Object[] payloadArray = new Object[this.payloadDataMap.size()];
+            for (Map.Entry<Integer, Integer> entry : this.payloadDataMap.entrySet()) {
+                payloadArray[entry.getKey()] = eventData[entry.getValue()];
             }
-            if (-1 != arbitraryAttributeIndex) {
+            wso2event.setPayloadData(payloadArray);
+
+            if (-1 != this.arbitraryAttributeIndex) {
                 //null value will be assigned if there is no map.
-                //todo check whether the map is Map<String, String> ??
-                wso2event.setArbitraryDataMap((Map<String, String>) eventData[arbitraryAttributeIndex]);
+                wso2event.setArbitraryDataMap((Map<String, String>) eventData[this.arbitraryAttributeIndex]);
             }
         }
         return wso2event;

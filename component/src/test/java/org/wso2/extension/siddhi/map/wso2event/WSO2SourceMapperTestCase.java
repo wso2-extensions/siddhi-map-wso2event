@@ -96,13 +96,13 @@ public class WSO2SourceMapperTestCase {
     /**
      * Expected input format:
      * Wso2event = {
-     *        streamId: wso2event.fooStream:1.0.0,
-     *        timeStamp: 431434134134,
-     *        metaData: [meta_object1, meta_object2],
-     *        correlationData: [correlation_object1, correlation_object2],
-     *        payloadData: [object1, object2, object3],
-     *        arbitraryDataMap: mapObject,
-     *    }
+     * streamId: wso2event.fooStream:1.0.0,
+     * timeStamp: 431434134134,
+     * metaData: [meta_object1, meta_object2],
+     * correlationData: [correlation_object1, correlation_object2],
+     * payloadData: [object1, object2, object3],
+     * arbitraryDataMap: mapObject,
+     * }
      */
     @Test
     public void testWSO2InputMappingDefault() throws InterruptedException {
@@ -111,11 +111,11 @@ public class WSO2SourceMapperTestCase {
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                                                                "arbitrary.map='arbitrary_object')) " +
+                "arbitrary.map='arbitrary_object')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                                        "price float, volume int, arbitrary_object object); " +
+                "price float, volume int, arbitrary_object object); " +
                 "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                                        "price float, volume int, arbitrary_object object); ";
+                "price float, volume int, arbitrary_object object); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
@@ -415,9 +415,9 @@ public class WSO2SourceMapperTestCase {
                 "@App:name('TestSiddhiApp')" +
                 "@source(type='inMemory', topic='stock', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                                        "price float, volume int, arbitrary_object object); " +
+                "price float, volume int, arbitrary_object object); " +
                 "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                                        "price float, volume int, arbitrary_object object); ";
+                "price float, volume int, arbitrary_object object); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
