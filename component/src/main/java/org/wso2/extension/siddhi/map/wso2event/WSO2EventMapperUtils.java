@@ -27,17 +27,17 @@ import org.wso2.siddhi.query.api.definition.Attribute;
 import java.util.List;
 
 /**
- * Util class for WSO2EventMapper
+ * Util class for WSO2EventMapper.
  */
 public class WSO2EventMapperUtils {
     public static final String STREAM_NAME_VER_DELIMITER = ":";
     public static final String DEFAULT_STREAM_VERSION = "1.0.0";
-    public static final String ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME = "arbitrary.map";
     public static final String META_DATA_PREFIX = "meta_";
     public static final String CORRELATION_DATA_PREFIX = "correlation_";
+    public static final String ARBITRARY_DATA_PREFIX = "arbitrary_";
 
     /**
-     * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}
+     * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}.
      *
      * @param attribute Siddhi Event attribute object
      * @return the created WSO2 Event attribute

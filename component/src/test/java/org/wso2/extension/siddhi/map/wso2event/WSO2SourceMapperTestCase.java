@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.transport.InMemoryBroker;
@@ -61,8 +62,8 @@ public class WSO2SourceMapperTestCase {
         Object correlation1[] = {"IBM", 500.5f, 500};
         Object payload1[] = {"WSO22", 101.5f, 51};
         Map<String, String> arbitraryDataMap1 = new HashMap<>();
-        arbitraryDataMap1.put("key11", "value11");
-        arbitraryDataMap1.put("key22", "value22");
+        arbitraryDataMap1.put("key1", "value11");
+        arbitraryDataMap1.put("key2", "value22");
         wso2event1 = new org.wso2.carbon.databridge.commons.Event("org" +
                 ".fooStream:1.0.0", 1496815276L, meta1, correlation1, payload1, arbitraryDataMap1);
 
@@ -70,8 +71,8 @@ public class WSO2SourceMapperTestCase {
         Object correlation2[] = {"IBM", 500.5f, 500};
         Object payload2[] = {"WSO222", 102.5f, 52};
         Map<String, String> arbitraryDataMap2 = new HashMap<>();
-        arbitraryDataMap2.put("key111", "value111");
-        arbitraryDataMap2.put("key222", "value222");
+        arbitraryDataMap2.put("key1", "value111");
+        arbitraryDataMap2.put("key2", "value222");
         wso2event2 = new org.wso2.carbon.databridge.commons.Event("org" +
                 ".fooStream:1.0.0", 1496815276L, meta2, correlation2, payload2, arbitraryDataMap2);
 
@@ -110,12 +111,11 @@ public class WSO2SourceMapperTestCase {
                 "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                "arbitrary.map='arbitrary_object')) " +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                "price float, volume int, arbitrary_object object); " +
+                "price float, volume int, arbitrary_key1 string); " +
                 "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                "price float, volume int, arbitrary_object object); ";
+                "price float, volume int, arbitrary_key1 string); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
@@ -136,8 +136,7 @@ public class WSO2SourceMapperTestCase {
                             break;
                         case 3:
                             AssertJUnit.assertEquals(102.5f, event.getData(3));
-                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(5);
-                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            AssertJUnit.assertEquals("value111", event.getData(5));
                             break;
                         default:
                             AssertJUnit.fail();
@@ -238,10 +237,9 @@ public class WSO2SourceMapperTestCase {
                 "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                "arbitrary.map='arbitrary_object')) " +
-                "define stream FooStream (symbol string, price float, volume int, arbitrary_object object); " +
-                "define stream BarStream (symbol string, price float, volume int, arbitrary_object object); ";
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
+                "define stream FooStream (symbol string, price float, volume int, arbitrary_key1 string); " +
+                "define stream BarStream (symbol string, price float, volume int, arbitrary_key1 string); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
@@ -256,8 +254,65 @@ public class WSO2SourceMapperTestCase {
                     switch (count.incrementAndGet()) {
                         case 1:
                             AssertJUnit.assertEquals(102.5f, event.getData(1));
-                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(3);
-                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            AssertJUnit.assertEquals("value111", event.getData(3));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event5);
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 1, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test(expectedExceptions = SiddhiAppCreationException.class)
+    public void testWSO2InputMappingDefaultWithMultiArbitraryAttributes() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with payload and arbitrary " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
+                "define stream FooStream (symbol string, price float, volume int, arbitrary_key1 string, " +
+                "arbitrary_key2 float); ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams);
+        siddhiAppRuntime.start();
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
+    @Test
+    public void testWSO2InputMappingDefaultWithArbitraryAttributesOtherThanString() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with payload and arbitrary " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
+                "define stream FooStream (symbol string, price float, volume int, arbitrary_key1 string, " +
+                "arbitrary_key2 string); " +
+                "define stream BarStream (symbol string, price float, volume int, arbitrary_key1 string, " +
+                "arbitrary_key2 string); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(102.5f, event.getData(1));
+                            AssertJUnit.assertEquals("value111", event.getData(3));
+                            AssertJUnit.assertEquals("value222", event.getData(4));
                             break;
                         default:
                             AssertJUnit.fail();
@@ -279,12 +334,11 @@ public class WSO2SourceMapperTestCase {
                 "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                "arbitrary.map='arbitrary_object')) " +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
                 "define stream FooStream (meta_timestamp long, meta_timestamp2 long, correlation_symbol string, " +
-                "symbol string, price float, volume int, arbitrary_object object); " +
+                "symbol string, price float, volume int, arbitrary_key1 string); " +
                 "define stream BarStream (meta_timestamp long, meta_timestamp2 long, correlation_symbol string, " +
-                "symbol string, price float, volume int, arbitrary_object object); ";
+                "symbol string, price float, volume int, arbitrary_key1 string); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
@@ -322,10 +376,9 @@ public class WSO2SourceMapperTestCase {
                 "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                "arbitrary.map='arbitrary_object')) " +
-                "define stream FooStream (meta_timestamp long, correlation_symbol string, arbitrary_object object); " +
-                "define stream BarStream (meta_timestamp long, correlation_symbol string, arbitrary_object object); ";
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
+                "define stream FooStream (meta_timestamp long, correlation_symbol string, arbitrary_key1 string); " +
+                "define stream BarStream (meta_timestamp long, correlation_symbol string, arbitrary_key1 string); ";
 
         String query = "" +
                 "from FooStream " +
@@ -346,8 +399,7 @@ public class WSO2SourceMapperTestCase {
                             AssertJUnit.assertEquals("IBM", event.getData(1));
                             break;
                         case 3:
-                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(3);
-                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            AssertJUnit.assertEquals("value111", event.getData(3));
                             break;
                         default:
                             AssertJUnit.fail();
@@ -370,12 +422,11 @@ public class WSO2SourceMapperTestCase {
                 "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
-                "arbitrary.map='arbitrary_object')) " +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                "price float, volume int, arbitrary_object object); " +
+                "price float, volume int, arbitrary_key1 string); " +
                 "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                "price float, volume int, arbitrary_object object); ";
+                "price float, volume int, arbitrary_key1 string); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
@@ -413,11 +464,11 @@ public class WSO2SourceMapperTestCase {
                 "values");
         String streams = "" +
                 "@App:name('TestSiddhiApp')" +
-                "@source(type='inMemory', topic='stock', @map(type='wso2event', arbitrary.map='arbitrary_object')) " +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event')) " +
                 "define stream FooStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                "price float, volume int, arbitrary_object object); " +
+                "price float, volume int, arbitrary_key1 string); " +
                 "define stream BarStream (meta_timestamp long, correlation_symbol string, symbol string, " +
-                "price float, volume int, arbitrary_object object); ";
+                "price float, volume int, arbitrary_key1 string); ";
         String query = "" +
                 "from FooStream " +
                 "select * " +
@@ -438,8 +489,7 @@ public class WSO2SourceMapperTestCase {
                             break;
                         case 3:
                             AssertJUnit.assertEquals(102.5f, event.getData(3));
-                            Map<String, String> arbitraryDataMap = (Map<String, String>) event.getData(5);
-                            AssertJUnit.assertEquals("value111", arbitraryDataMap.get("key111"));
+                            AssertJUnit.assertEquals("value111", event.getData(5));
                             break;
                         default:
                             AssertJUnit.fail();

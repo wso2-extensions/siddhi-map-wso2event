@@ -25,20 +25,25 @@ import org.wso2.siddhi.annotation.Parameter;
 import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.output.sink.SinkListener;
 import org.wso2.siddhi.core.stream.output.sink.SinkMapper;
 import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.definition.Attribute.Type;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 
 /**
@@ -100,7 +105,7 @@ public class WSO2SinkMapper extends SinkMapper {
     private Map<Integer, Integer> metaDataMap;
     private Map<Integer, Integer> correlationDataMap;
     private Map<Integer, Integer> payloadDataMap;
-    private int arbitraryAttributeIndex = -1;
+    private Map<String, Integer> arbitraryDataMap;
 
     @Override
     public String[] getSupportedDynamicOptions() {
@@ -130,12 +135,11 @@ public class WSO2SinkMapper extends SinkMapper {
                     " @attributes section in mapping.");
         }
 
-        String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
-                WSO2EventMapperUtils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
         List<Attribute> attributeList = streamDefinition.getAttributeList();
         this.metaDataMap = new TreeMap<>();
         this.correlationDataMap = new TreeMap<>();
         this.payloadDataMap = new TreeMap<>();
+        this.arbitraryDataMap = new HashMap<>();
 
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
         List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList = new ArrayList<>();
@@ -144,23 +148,23 @@ public class WSO2SinkMapper extends SinkMapper {
 
         for (int i = 0; i < attributeList.size(); i++) {
             Attribute attribute = attributeList.get(i);
-            if (attribute.getName().startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
+            String attributeName = attribute.getName();
+            if (attributeName.startsWith(META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
                 metaAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
                 this.metaDataMap.put(metaCount, i);
                 metaCount++;
-            } else if (attribute.getName().startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
                 correlationAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
                 this.correlationDataMap.put(correlationCount, i);
                 correlationCount++;
-            } else if (null != arbitraryAttributeName &&
-                    attribute.getName().equals(arbitraryAttributeName)) {
-                if (Type.OBJECT.equals(attribute.getType())) {
-                    this.arbitraryAttributeIndex = i;
+            } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
+                if (attribute.getType().equals(Attribute.Type.STRING)) {
+                    this.arbitraryDataMap.put(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i);
                 } else {
-                    throw new SiddhiAppValidationException("defined arbitrary.map attribute in the " +
-                            "mapping is type: " + attribute.getType() + ". It should be type: " +
-                            Type.OBJECT);
+                    throw new SiddhiAppCreationException("Arbitrary map value has been mapped to '"
+                            + attribute.getType() + "' in Siddhi app '" + siddhiAppContext.getName() + "'. " +
+                            "However, arbitrary map value can only be mapped to type 'String'.");
                 }
             } else {
                 payloadAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
@@ -232,10 +236,11 @@ public class WSO2SinkMapper extends SinkMapper {
             }
             wso2event.setPayloadData(payloadArray);
 
-            if (-1 != this.arbitraryAttributeIndex) {
-                //null value will be assigned if there is no map.
-                wso2event.setArbitraryDataMap((Map<String, String>) eventData[this.arbitraryAttributeIndex]);
+            Map<String, String> arbitraryDataMap = new HashMap<>();
+            for (Map.Entry<String, Integer> entry : this.arbitraryDataMap.entrySet()) {
+                arbitraryDataMap.put(entry.getKey(), (String) eventData[entry.getValue()]);
             }
+            wso2event.setArbitraryDataMap(arbitraryDataMap);
         }
         return wso2event;
     }
