@@ -202,7 +202,7 @@ public class WSO2SinkMapper extends SinkMapper {
     }
 
     /**
-     * Convert the given {@link Event} to WSO2 {@link org.wso2.carbon.databridge.commons.Event}
+     * Convert the given {@link Event} to WSO2 {@link org.wso2.carbon.databridge.commons.Event}.
      *
      * @param event Event object
      * @return the constructed WSO2 Event

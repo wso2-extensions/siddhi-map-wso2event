@@ -68,7 +68,7 @@ public class WSO2EventMapperUtils {
                 break;
             default:
                 throw new SiddhiAppCreationException("Attribute type is not valid when converting to data bridge " +
-                        "attribute. Found attribute,  Name : '" + attributeName+ "', " +
+                        "attribute. Found attribute,  Name : '" + attributeName + "', " +
                         "Type: '" + attributeType + "'");
         }
 
