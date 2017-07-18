@@ -17,7 +17,6 @@
  */
 package org.wso2.extension.siddhi.map.wso2event.sink;
 
-import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
 import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
@@ -33,9 +32,7 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +98,6 @@ import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_
 )
 public class WSO2SinkMapper extends SinkMapper {
 
-    private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
     private String outputStreamId;
 
     private Map<Integer, Integer> metaDataMap;
@@ -150,9 +146,6 @@ public class WSO2SinkMapper extends SinkMapper {
         }
 
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
-        List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList = new ArrayList<>();
-        List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList = new ArrayList<>();
-        List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
 
         for (int i = 0; i < attributeList.size(); i++) {
             Attribute attribute = attributeList.get(i);
@@ -164,11 +157,9 @@ public class WSO2SinkMapper extends SinkMapper {
 
             if (attributeName.startsWith(META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
-                metaAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
                 this.metaDataMap.put(metaCount, i);
                 metaCount++;
             } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
-                correlationAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
                 this.correlationDataMap.put(correlationCount, i);
                 correlationCount++;
             } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
@@ -180,20 +171,13 @@ public class WSO2SinkMapper extends SinkMapper {
                             "However, arbitrary map value can only be mapped to type 'String'.");
                 }
             } else {
-                payloadAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
                 this.payloadDataMap.put(payloadCount, i);
                 payloadCount++;
             }
         }
 
-        try {
             this.outputStreamId = streamDefinition.getId() + WSO2EventMapperUtils.STREAM_NAME_VER_DELIMITER +
                     WSO2EventMapperUtils.DEFAULT_STREAM_VERSION;
-            this.streamDefinition = WSO2EventMapperUtils.createWSO2EventStreamDefinition(streamDefinition.getId(),
-                    metaAttributeList, correlationAttributeList, payloadAttributeList);
-        } catch (MalformedStreamDefinitionException e) {
-            throw new SiddhiAppValidationException(e.getMessage(), e);
-        }
     }
 
     @Override
@@ -258,7 +242,4 @@ public class WSO2SinkMapper extends SinkMapper {
         return wso2event;
     }
 
-    public org.wso2.carbon.databridge.commons.StreamDefinition getWSO2StreamDefinition() {
-        return streamDefinition;
-    }
 }
