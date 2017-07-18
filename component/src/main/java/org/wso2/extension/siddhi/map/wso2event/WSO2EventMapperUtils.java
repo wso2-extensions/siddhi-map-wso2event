@@ -45,7 +45,7 @@ public class WSO2EventMapperUtils {
      * @return the created WSO2 Event attribute
      */
     public static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(
-                                                                String attributeName, Attribute.Type attributeType) {
+            String attributeName, Attribute.Type attributeType) {
         org.wso2.carbon.databridge.commons.AttributeType dbAttributeType;
         switch (attributeType) {
             case BOOL:

@@ -23,8 +23,6 @@ import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionExc
 import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
@@ -54,55 +52,54 @@ import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_
 @Extension(
         name = "wso2event",
         namespace = "sourceMapper",
-        description = "WSO2 event to Siddhi Event input mapper. Transports which accepts WSO2 messages can utilize " +
+        description = "WSO2 Event to Siddhi Event input mapper. Transports which accepts WSO2 messages can utilize " +
                 "this extension to convert the incoming WSO2 message to Siddhi event. Users can send a WSO2 message" +
-                "which should contain the mapping stream attributes in the same order as the defined stream. This " +
-                "conversion will happen without any configs.",
-        parameters = {
-                @Parameter(
-                        name = "arbitrary.map",
-                        description = "Used to provide the attribute name of the stream which the arbitrary object " +
-                                "to be mapped.\neg: arbitrary.map='foo' foo is a attribute name in the stream " +
-                                "definition with the attribute type object",
-                        type = {DataType.STRING},
-                        optional = true,
-                        defaultValue = "null")
-        },
+                "which should contain the mapping stream attributes in the same order as the defined stream (Within " +
+                "a WSO2 Event attribute type). This conversion will happen without any configs.\n" +
+                "Following prefixes will be used to identify different attributes such as meta, correlation, payload " +
+                "and arbitrary. Prefixes available," +
+                "1. meta_ - metaData," +
+                "2. correlation_ - correlationData," +
+                "3. arbitrary_ - value contained in the arbitraryMap mapped to the key defined after the prefix" +
+                "If the above prefixes are not used, the attribute is taken as payload data.",
         examples = {
                 @Example(
                         syntax = "@source(type=’wso2event’, @map(type=’wso2event’) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long);",
-                        description = "Above configuration will do a WSO2 mapping. Expected input will look like " +
-                                "below.\n" +
+                        description = "Above configuration will perform a WSO2 default mapping. Expected input " +
+                                "should be as follows.\n" +
                                 "Wso2event = {\n" +
                                 "                streamId: org.wso2event.fooStream:1.0.0,\n" +
                                 "                timestamp: 431434134134,\n" +
-                                "                metaData: [timestamp, meta_object2],\n" +
-                                "                correlationData: [correlation_object1],\n" +
+                                "                metaData: [timestamp],\n" +
+                                "                correlationData: [],\n" +
                                 "                payloadData: [symbol, price, volume]\n" +
-                                "            }\n" +
-                                "There can be at least the number of attributes of each type (meta, " +
-                                "correlation, payload) or more than defined in the stream definition" +
-                                " eg: metaData array has more than meta attributes defined and payloadData " +
-                                "has the exact amount of attributes as defined in the stream"),
+                                "            }\n"),
                 @Example(
-                        syntax = "@source(type=’wso2event’, @map(type=’wso2event’, arbitrary.map='arbitrary_object'))" +
+                        syntax = "@source(type=’wso2event’, @map(type=’wso2event’, " +
+                                "@attributes(" +
+                                "timestamp='meta_timestamp'," +
+                                "symbol='symbol'," +
+                                "price='price'," +
+                                "volume='volume'," +
+                                "portfolioId='arbitrary_portfolio_ID'" +
+                                ")))" +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
-                                "volume long, arbitrary_object object)); ",
-                        description = "Above configuration will do a WSO2 mapping which also expects an arbitrary " +
-                                "map. Expected input will look like below.\n" +
+                                "volume long, portfolioId string)); ",
+                        description = "Above configuration will perform a WSO2 mapping. Expected input should be as " +
+                                "follows,\n" +
                                 "Wso2event = {\n" +
                                 "                streamId: org.wso2event.fooStream:1.0.0,\n" +
                                 "                timeStamp: 431434134134,\n" +
-                                "                metaData: [timestamp, meta_object2],\n" +
-                                "                correlationData: [correlation_object1],\n" +
+                                "                metaData: [timestamp],\n" +
+                                "                correlationData: [],\n" +
                                 "                payloadData: [symbol, price, volume],\n" +
                                 "                arbitraryDataMap: objectMap,\n" +
                                 "            }\n" +
-                                "The WSO2 mapper will get the arbitrary map in the WSO2 event. And assign its" +
-                                " value. If the map is not defined, the Siddhi events arbitrary object value " +
-                                "would be assigned as null"),
+                                "The WSO2 mapper will get the arbitrary map in the WSO2 event and assign its' " +
+                                "value associated with the key 'portfolio_ID' to the siddhi attribute. If the map " +
+                                "does not contain the key value pair, null will be passed."),
         }
 )
 public class WSO2SourceMapper extends SourceMapper {
@@ -154,7 +151,7 @@ public class WSO2SourceMapper extends SourceMapper {
                 metaCount++;
             } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
                 correlationAttributeList.add(WSO2EventMapperUtils
-                                                .createWso2EventAttribute(attributeName, attributeType));
+                        .createWso2EventAttribute(attributeName, attributeType));
                 this.correlationDataMap.put(correlationCount, i);
                 correlationCount++;
             } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
