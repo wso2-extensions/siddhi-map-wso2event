@@ -40,37 +40,39 @@ public class WSO2EventMapperUtils {
     /**
      * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}.
      *
-     * @param attribute Siddhi Event attribute object
+     * @param attributeName Siddhi Event attribute name
+     * @param attributeType Siddhi Event attribute type
      * @return the created WSO2 Event attribute
      */
-    public static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(Attribute attribute) {
-        org.wso2.carbon.databridge.commons.AttributeType attribute1;
-        switch (attribute.getType()) {
+    public static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(
+                                                                String attributeName, Attribute.Type attributeType) {
+        org.wso2.carbon.databridge.commons.AttributeType dbAttributeType;
+        switch (attributeType) {
             case BOOL:
-                attribute1 = AttributeType.BOOL;
+                dbAttributeType = AttributeType.BOOL;
                 break;
             case STRING:
-                attribute1 = AttributeType.STRING;
+                dbAttributeType = AttributeType.STRING;
                 break;
             case INT:
-                attribute1 = AttributeType.INT;
+                dbAttributeType = AttributeType.INT;
                 break;
             case LONG:
-                attribute1 = AttributeType.LONG;
+                dbAttributeType = AttributeType.LONG;
                 break;
             case FLOAT:
-                attribute1 = AttributeType.FLOAT;
+                dbAttributeType = AttributeType.FLOAT;
                 break;
             case DOUBLE:
-                attribute1 = AttributeType.DOUBLE;
+                dbAttributeType = AttributeType.DOUBLE;
                 break;
             default:
                 throw new SiddhiAppCreationException("Attribute type is not valid when converting to data bridge " +
-                        "attribute. Found attribute,  Name : '" + attribute.getName() + "', " +
-                        "Type: '" + attribute.getType() + "'");
+                        "attribute. Found attribute,  Name : '" + attributeName+ "', " +
+                        "Type: '" + attributeType + "'");
         }
 
-        return new org.wso2.carbon.databridge.commons.Attribute(attribute.getName(), attribute1);
+        return new org.wso2.carbon.databridge.commons.Attribute(attributeName, dbAttributeType);
     }
 
     public static StreamDefinition createWSO2EventStreamDefinition(

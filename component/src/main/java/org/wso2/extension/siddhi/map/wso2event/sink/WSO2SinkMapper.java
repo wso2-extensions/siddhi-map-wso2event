@@ -148,11 +148,10 @@ public class WSO2SinkMapper extends SinkMapper {
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
 
         for (int i = 0; i < attributeList.size(); i++) {
-            Attribute attribute = attributeList.get(i);
-            String attributeName = attribute.getName();
+            String attributeName = attributeList.get(i).getName();
+            Attribute.Type attributeType = attributeList.get(i).getType();
             if (customMappingEnabled) {
                 attributeName = customMappedAttributes.get(attributeName);
-                attribute = new Attribute(attributeName, attribute.getType());
             }
 
             if (attributeName.startsWith(META_DATA_PREFIX)) {
@@ -163,11 +162,11 @@ public class WSO2SinkMapper extends SinkMapper {
                 this.correlationDataMap.put(correlationCount, i);
                 correlationCount++;
             } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
-                if (attribute.getType().equals(Attribute.Type.STRING)) {
+                if (attributeType.equals(Attribute.Type.STRING)) {
                     this.arbitraryDataMap.put(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i);
                 } else {
                     throw new SiddhiAppCreationException("Arbitrary map value has been mapped to '"
-                            + attribute.getType() + "' in Siddhi app '" + siddhiAppContext.getName() + "'. " +
+                            + attributeType + "' in Siddhi app '" + siddhiAppContext.getName() + "'. " +
                             "However, arbitrary map value can only be mapped to type 'String'.");
                 }
             } else {
