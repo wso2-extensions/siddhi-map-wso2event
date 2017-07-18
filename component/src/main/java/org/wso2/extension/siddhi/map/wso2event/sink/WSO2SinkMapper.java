@@ -40,9 +40,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CUSTOM_MAPPING_ENABLED;
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 
@@ -130,16 +132,22 @@ public class WSO2SinkMapper extends SinkMapper {
     @Override
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, TemplateBuilder templateBuilder,
                      ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
-        if (templateBuilder != null) {   //custom mapping
-            throw new SiddhiAppValidationException("WSO2 Transport does not support custom mapping. Please remove" +
-                    " @attributes section in mapping.");
-        }
 
         List<Attribute> attributeList = streamDefinition.getAttributeList();
         this.metaDataMap = new TreeMap<>();
         this.correlationDataMap = new TreeMap<>();
         this.payloadDataMap = new TreeMap<>();
         this.arbitraryDataMap = new HashMap<>();
+
+        boolean customMappingEnabled = Boolean.parseBoolean(
+                optionHolder.validateAndGetStaticValue(CUSTOM_MAPPING_ENABLED, "false"));
+        Map<String, String> customMappedAttributes = new HashMap<>();
+        if (customMappingEnabled) {
+            customMappedAttributes = attributeList.stream()
+                    .collect(Collectors.toMap(
+                            Attribute::getName,
+                            (attribute) -> optionHolder.validateAndGetStaticValue(attribute.getName())));
+        }
 
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
         List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList = new ArrayList<>();
@@ -149,6 +157,11 @@ public class WSO2SinkMapper extends SinkMapper {
         for (int i = 0; i < attributeList.size(); i++) {
             Attribute attribute = attributeList.get(i);
             String attributeName = attribute.getName();
+            if (customMappingEnabled) {
+                attributeName = customMappedAttributes.get(attributeName);
+                attribute = new Attribute(attributeName, attribute.getType());
+            }
+
             if (attributeName.startsWith(META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
                 metaAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attribute));
@@ -186,11 +199,11 @@ public class WSO2SinkMapper extends SinkMapper {
     @Override
     public void mapAndSend(Event event, OptionHolder optionHolder, TemplateBuilder templateBuilder,
                            SinkListener sinkListener) {
-        sinkListener.publish(constructDefaultMapping(event));
+        sinkListener.publish(constructMapping(event));
     }
 
     /**
-     * Map and publish the given {@link Event} array
+     * Map and publish the given {@link Event} array.
      *
      * @param events          Event object array
      * @param optionHolder    option holder containing static and dynamic options
@@ -201,7 +214,7 @@ public class WSO2SinkMapper extends SinkMapper {
     public void mapAndSend(Event[] events, OptionHolder optionHolder, TemplateBuilder templateBuilder,
                            SinkListener sinkListener) {
         for (Event event : events) {
-            sinkListener.publish(constructDefaultMapping(event));
+            sinkListener.publish(constructMapping(event));
         }
     }
 
@@ -211,7 +224,7 @@ public class WSO2SinkMapper extends SinkMapper {
      * @param event Event object
      * @return the constructed WSO2 Event
      */
-    private org.wso2.carbon.databridge.commons.Event constructDefaultMapping(Event event) {
+    private org.wso2.carbon.databridge.commons.Event constructMapping(Event event) {
         org.wso2.carbon.databridge.commons.Event wso2event = new org.wso2.carbon.databridge.commons.Event();
         wso2event.setTimeStamp(event.getTimestamp());
         wso2event.setStreamId(this.outputStreamId);

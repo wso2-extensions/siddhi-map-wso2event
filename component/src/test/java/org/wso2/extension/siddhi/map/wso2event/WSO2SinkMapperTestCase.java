@@ -668,4 +668,97 @@ public class WSO2SinkMapperTestCase {
         siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
+
+    @Test
+    public void testWSO2SinkmapperCustomMappingWithSiddhiQL() throws InterruptedException {
+        log.info("Test custom wso2event mapping with SiddhiQL");
+        List<Object> onMessageList = new ArrayList<Object>();
+        InMemoryBroker.Subscriber subscriberWSO2 = new InMemoryBroker.Subscriber() {
+            @Override
+            public void onMessage(Object msg) {
+                wso2Count.incrementAndGet();
+                onMessageList.add(msg);
+            }
+
+            @Override
+            public String getTopic() {
+                return "WSO2";
+            }
+        };
+        InMemoryBroker.Subscriber subscriberIBM = new InMemoryBroker.Subscriber() {
+            @Override
+            public void onMessage(Object msg) {
+                ibmCount.incrementAndGet();
+                onMessageList.add(msg);
+            }
+
+            @Override
+            public String getTopic() {
+                return "IBM";
+            }
+        };
+        //subscribe to "inMemory" broker per topic
+        InMemoryBroker.subscribe(subscriberWSO2);
+        InMemoryBroker.subscribe(subscriberIBM);
+
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "define stream FooStream (timestamp long, symbolCR string, symbol string, price float," +
+                " volume int, key1 string); " +
+                "@sink(type='inMemory', topic='{{symbol}}', @map(type='wso2event', " +
+                "enable.custom.mapping ='true', " +
+                "timestamp='meta_timestamp'," +
+                "symbolCR= 'correlation_symbol'," +
+                "symbol='symbol'," +
+                "price='price'," +
+                "volume='volume'," +
+                "key1='arbitrary_key1' )) " +
+                "define stream BarStream (timestamp long, symbolCR string, symbol string, price float," +
+                " volume int, key1 string); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        siddhiManager.setExtension("sink:inMemory", InMemorySink.class);
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        InputHandler stockStream = siddhiAppRuntime.getInputHandler("FooStream");
+
+        siddhiAppRuntime.start();
+        stockStream.send(new Object[]{1212212121L, "Lanka", "WSO2", 55.645f, 100L, "value1"});
+        stockStream.send(new Object[]{2212212121L, "US", "IBM", 65.645f, 200L, "value11"});
+        stockStream.send(new Object[]{3212212121L, "SL", "IBM", 75.645f, 300L, null});
+        stockStream.send(new Object[]{3212212121L, "SL", "WSO2", null, 300L, "value111"});
+        Thread.sleep(100);
+
+        //assert event count
+        AssertJUnit.assertEquals("Incorrect number of events consumed!", 2, wso2Count.get());
+        AssertJUnit.assertEquals("Incorrect number of events consumed!", 2, ibmCount.get());
+
+        org.wso2.carbon.databridge.commons.Event wso2event =
+                (org.wso2.carbon.databridge.commons.Event) onMessageList.get(0);
+        AssertJUnit.assertEquals(1212212121L, wso2event.getMetaData()[0]);
+        AssertJUnit.assertEquals("Lanka", wso2event.getCorrelationData()[0]);
+        AssertJUnit.assertEquals("WSO2", wso2event.getPayloadData()[0]);
+        AssertJUnit.assertEquals("BarStream:1.0.0", wso2event.getStreamId());
+
+        wso2event = (org.wso2.carbon.databridge.commons.Event) onMessageList.get(1);
+        AssertJUnit.assertEquals(65.645f, wso2event.getPayloadData()[1]);
+        AssertJUnit.assertEquals(200L, wso2event.getPayloadData()[2]);
+        AssertJUnit.assertEquals("value11", wso2event.getArbitraryDataMap().get("key1"));
+
+        wso2event = (org.wso2.carbon.databridge.commons.Event) onMessageList.get(2);
+        AssertJUnit.assertEquals(null, wso2event.getArbitraryDataMap().get("key1"));
+
+        wso2event = (org.wso2.carbon.databridge.commons.Event) onMessageList.get(3);
+        AssertJUnit.assertEquals(null, wso2event.getPayloadData()[1]);
+        AssertJUnit.assertEquals("value111", wso2event.getArbitraryDataMap().get("key1"));
+
+        siddhiAppRuntime.shutdown();
+
+        //unsubscribe from "inMemory" broker per topic
+        InMemoryBroker.unsubscribe(subscriberWSO2);
+        InMemoryBroker.unsubscribe(subscriberIBM);
+        siddhiManager.shutdown();
+    }
 }

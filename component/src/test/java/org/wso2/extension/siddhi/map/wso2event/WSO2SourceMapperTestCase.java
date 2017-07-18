@@ -509,4 +509,62 @@ public class WSO2SourceMapperTestCase {
         siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
+
+    @Test
+    public void testWSO2InputMappingCustom() throws InterruptedException {
+        log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
+                "values");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "@source(type='inMemory', topic='stock', @map(type='wso2event', " +
+                "@attributes(" +
+                "timestamp = 'meta_timestamp'," +
+                "symbolCR = 'correlation_symbol'," +
+                "symbol = 'symbol'," +
+                "key1 = 'arbitrary_key1'," +
+                "price ='price'," +
+                "volume = 'volume'" +
+                "))) " +
+                "define stream FooStream (timestamp long, symbolCR string, symbol string, " +
+                "price float, volume int, key1 string); " +
+                "define stream BarStream (timestamp long, symbolCR string, symbol string, " +
+                "price float, volume int, key1 string); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.addCallback("BarStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+                for (Event event : events) {
+                    switch (count.incrementAndGet()) {
+                        case 1:
+                            AssertJUnit.assertEquals(1496814501L, event.getData(0));
+                            break;
+                        case 2:
+                            AssertJUnit.assertEquals("IBM", event.getData(1));
+                            break;
+                        case 3:
+                            AssertJUnit.assertEquals(102.5f, event.getData(3));
+                            AssertJUnit.assertEquals("value111", event.getData(5));
+                            break;
+                        default:
+                            AssertJUnit.fail();
+                    }
+                }
+            }
+        });
+        siddhiAppRuntime.start();
+        InMemoryBroker.publish("stock", wso2event);
+        InMemoryBroker.publish("stock", wso2event1);
+        InMemoryBroker.publish("stock", wso2event2);
+        //assert event count
+        AssertJUnit.assertEquals("Number of events", 3, count.get());
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+    }
+
 }

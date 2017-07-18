@@ -35,6 +35,7 @@ public class WSO2EventMapperUtils {
     public static final String META_DATA_PREFIX = "meta_";
     public static final String CORRELATION_DATA_PREFIX = "correlation_";
     public static final String ARBITRARY_DATA_PREFIX = "arbitrary_";
+    public static final String CUSTOM_MAPPING_ENABLED = "enable.custom.mapping";
 
     /**
      * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}.
