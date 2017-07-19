@@ -17,6 +17,7 @@
  */
 package org.wso2.extension.siddhi.map.wso2event.sink;
 
+import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
 import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
@@ -31,6 +32,7 @@ import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,10 +102,13 @@ public class WSO2SinkMapper extends SinkMapper {
 
     private String outputStreamId;
 
-    private Map<Integer, Integer> metaDataMap;
-    private Map<Integer, Integer> correlationDataMap;
-    private Map<Integer, Integer> payloadDataMap;
-    private Map<String, Integer> arbitraryDataMap;
+    private int numMetaAttributes;
+    private int numCorrelationAttributes;
+    private int numPayloadAttributes;
+    private Integer[] metaDataPositions;
+    private Integer[] correlationDataPositions;
+    private Integer[] payloadDataPositions;
+    private AttributePosition[] arbitraryDataPositions;
 
     @Override
     public String[] getSupportedDynamicOptions() {
@@ -131,12 +136,7 @@ public class WSO2SinkMapper extends SinkMapper {
 
         List<Attribute> attributeList = streamDefinition.getAttributeList();
 
-        this.metaDataMap = new HashMap<>();
-        this.correlationDataMap = new HashMap<>();
-        this.payloadDataMap = new HashMap<>();
-        this.arbitraryDataMap = new HashMap<>();
         Map<String, String> mappedAttributes = new HashMap<>();
-
         Set<String> staticOptionsKeys = optionHolder.getStaticOptionsKeys();
         staticOptionsKeys.remove("type");
         boolean customMappingEnabled = staticOptionsKeys.size() > 0;
@@ -144,7 +144,10 @@ public class WSO2SinkMapper extends SinkMapper {
             staticOptionsKeys.forEach((key) -> mappedAttributes.put(optionHolder.validateAndGetStaticValue(key), key));
         }
 
-        int metaCount = 0, correlationCount = 0, payloadCount = 0;
+        List<Integer> metaDataList = new ArrayList<>();
+        List<Integer> correlationDataList = new ArrayList<>();
+        List<Integer> payloadDataList = new ArrayList<>();
+        List<AttributePosition> arbitraryDataList = new ArrayList<>();
 
         for (int i = 0; i < attributeList.size(); i++) {
             String attributeName = attributeList.get(i).getName();
@@ -160,24 +163,30 @@ public class WSO2SinkMapper extends SinkMapper {
 
             if (attributeName.startsWith(META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
-                this.metaDataMap.put(metaCount, i);
-                metaCount++;
+                metaDataList.add(i);
             } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
-                this.correlationDataMap.put(correlationCount, i);
-                correlationCount++;
+                correlationDataList.add(i);
             } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
                 if (attributeType.equals(Attribute.Type.STRING)) {
-                    this.arbitraryDataMap.put(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i);
+                    arbitraryDataList.add(
+                            new AttributePosition(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i));
                 } else {
                     throw new SiddhiAppCreationException("Arbitrary map value has been mapped to '"
                             + attributeType + "' in Siddhi app '" + siddhiAppContext.getName() + "'. " +
                             "However, arbitrary map value can only be mapped to type 'String'.");
                 }
             } else {
-                this.payloadDataMap.put(payloadCount, i);
-                payloadCount++;
+                payloadDataList.add(i);
             }
         }
+
+        this.numMetaAttributes = metaDataList.size();
+        this.numCorrelationAttributes = correlationDataList.size();
+        this.numPayloadAttributes = payloadDataList.size();
+        this.metaDataPositions = metaDataList.toArray(new Integer[this.numMetaAttributes]);
+        this.correlationDataPositions = correlationDataList.toArray(new Integer[this.numCorrelationAttributes]);
+        this.payloadDataPositions = payloadDataList.toArray(new Integer[this.numPayloadAttributes]);
+        this.arbitraryDataPositions = arbitraryDataList.toArray(new AttributePosition[arbitraryDataList.size()]);
 
         this.outputStreamId = streamDefinition.getId() + WSO2EventMapperUtils.STREAM_NAME_VER_DELIMITER +
                 WSO2EventMapperUtils.DEFAULT_STREAM_VERSION;
@@ -218,27 +227,30 @@ public class WSO2SinkMapper extends SinkMapper {
         Object[] eventData = event.getData();
         if (eventData.length > 0) {
 
-            Object[] metaArray = new Object[this.metaDataMap.size()];
-            for (Map.Entry<Integer, Integer> entry : this.metaDataMap.entrySet()) {
-                metaArray[entry.getKey()] = eventData[entry.getValue()];
+            Object[] metaArray = new Object[this.numMetaAttributes];
+            for (int i = 0; i < this.numMetaAttributes; i++) {
+                metaArray[i] = eventData[this.metaDataPositions[i]];
             }
             wso2event.setMetaData(metaArray);
 
-            Object[] correlationArray = new Object[this.correlationDataMap.size()];
-            for (Map.Entry<Integer, Integer> entry : this.correlationDataMap.entrySet()) {
-                correlationArray[entry.getKey()] = eventData[entry.getValue()];
+            Object[] correlationArray = new Object[this.numCorrelationAttributes];
+            for (int i = 0; i < this.numCorrelationAttributes; i++) {
+                correlationArray[i] = eventData[this.correlationDataPositions[i]];
             }
             wso2event.setCorrelationData(correlationArray);
 
-            Object[] payloadArray = new Object[this.payloadDataMap.size()];
-            for (Map.Entry<Integer, Integer> entry : this.payloadDataMap.entrySet()) {
-                payloadArray[entry.getKey()] = eventData[entry.getValue()];
+            Object[] payloadArray = new Object[this.numPayloadAttributes];
+            for (int i = 0; i < this.numPayloadAttributes; i++) {
+                payloadArray[i] = eventData[this.payloadDataPositions[i]];
             }
             wso2event.setPayloadData(payloadArray);
 
             Map<String, String> arbitraryDataMap = new HashMap<>();
-            for (Map.Entry<String, Integer> entry : this.arbitraryDataMap.entrySet()) {
-                arbitraryDataMap.put(entry.getKey(), (String) eventData[entry.getValue()]);
+            for (AttributePosition arbitraryDataPosition : this.arbitraryDataPositions) {
+                arbitraryDataMap.put(
+                        arbitraryDataPosition.getAttributeName(),
+                        (String) eventData[arbitraryDataPosition.getAttributePosition()]
+                );
             }
             wso2event.setArbitraryDataMap(arbitraryDataMap);
         }
