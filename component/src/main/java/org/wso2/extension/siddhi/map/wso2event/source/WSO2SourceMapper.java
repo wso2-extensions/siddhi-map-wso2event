@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
@@ -106,7 +105,7 @@ public class WSO2SourceMapper extends SourceMapper {
     private static final Logger LOGGER = Logger.getLogger(WSO2SourceMapper.class);
 
     private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
-    private List<Attribute> attributeList;
+    private int numAttributes;
     private Map<Integer, Integer> metaDataMap;
     private Map<Integer, Integer> correlationDataMap;
     private Map<Integer, Integer> payloadDataMap;
@@ -124,11 +123,12 @@ public class WSO2SourceMapper extends SourceMapper {
     @Override
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, List<AttributeMapping> list,
                      ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
-        this.attributeList = streamDefinition.getAttributeList();
+        List<Attribute> attributeList = streamDefinition.getAttributeList();
 
-        this.metaDataMap = new TreeMap<>();
-        this.correlationDataMap = new TreeMap<>();
-        this.payloadDataMap = new TreeMap<>();
+        this.numAttributes = attributeList.size();
+        this.metaDataMap = new HashMap<>();
+        this.correlationDataMap = new HashMap<>();
+        this.payloadDataMap = new HashMap<>();
         this.arbitraryDataMap = new HashMap<>();
 
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
@@ -136,12 +136,14 @@ public class WSO2SourceMapper extends SourceMapper {
         List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList = new ArrayList<>();
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
 
-        for (int i = 0; i < this.attributeList.size(); i++) {
-            String attributeName = this.attributeList.get(i).getName();
-            Attribute.Type attributeType = this.attributeList.get(i).getType();
+        for (int i = 0; i < attributeList.size(); i++) {
+            String attributeName;
             if (list != null && list.size() > 0) {
                 attributeName = list.get(i).getMapping();
+            } else {
+                attributeName = attributeList.get(i).getName();
             }
+            Attribute.Type attributeType = attributeList.get(i).getType();
 
             if (attributeName.startsWith(META_DATA_PREFIX)) {
                 //meta array's metaCount'th attribute of import stream will be mapped to the i'th
@@ -190,7 +192,7 @@ public class WSO2SourceMapper extends SourceMapper {
         org.wso2.carbon.databridge.commons.Event wso2event;
         if (eventObject instanceof org.wso2.carbon.databridge.commons.Event) {
             wso2event = (org.wso2.carbon.databridge.commons.Event) eventObject;
-            Object outputAttributes[] = new Object[this.attributeList.size()];
+            Object outputAttributes[] = new Object[this.numAttributes];
 
             for (Map.Entry<Integer, Integer> entry : this.metaDataMap.entrySet()) {
                 outputAttributes[entry.getValue()] = wso2event.getMetaData()[entry.getKey()];
@@ -211,7 +213,7 @@ public class WSO2SourceMapper extends SourceMapper {
             inputEventHandler.sendEvent(new Event(wso2event.getTimeStamp(), outputAttributes));
         } else {
             LOGGER.warn("Event object is invalid. Expected WSO2Event, but found " + eventObject.getClass()
-                    .getCanonicalName() + ". Hence dropping the event");
+                    .getCanonicalName() + ". Hence, dropping the event");
         }
     }
 

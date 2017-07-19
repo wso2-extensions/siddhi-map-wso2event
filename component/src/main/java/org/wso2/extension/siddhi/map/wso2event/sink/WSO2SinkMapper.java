@@ -33,10 +33,10 @@ import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
@@ -137,29 +137,31 @@ public class WSO2SinkMapper extends SinkMapper {
                      ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
 
         List<Attribute> attributeList = streamDefinition.getAttributeList();
-        this.metaDataMap = new TreeMap<>();
-        this.correlationDataMap = new TreeMap<>();
-        this.payloadDataMap = new TreeMap<>();
+
+        this.metaDataMap = new HashMap<>();
+        this.correlationDataMap = new HashMap<>();
+        this.payloadDataMap = new HashMap<>();
         this.arbitraryDataMap = new HashMap<>();
+        List<String> customMappedAttributes = new ArrayList<>();
 
         boolean customMappingEnabled = Boolean.parseBoolean(
                 optionHolder.validateAndGetStaticValue(CUSTOM_MAPPING_ENABLED, "false"));
-        Map<String, String> customMappedAttributes = new HashMap<>();
         if (customMappingEnabled) {
             customMappedAttributes = attributeList.stream()
-                    .collect(Collectors.toMap(
-                            Attribute::getName,
-                            (attribute) -> optionHolder.validateAndGetStaticValue(attribute.getName())));
+                    .map((attribute) -> optionHolder.validateAndGetStaticValue(attribute.getName()))
+                    .collect(Collectors.toList());
         }
 
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
 
         for (int i = 0; i < attributeList.size(); i++) {
-            String attributeName = attributeList.get(i).getName();
-            Attribute.Type attributeType = attributeList.get(i).getType();
+            String attributeName;
             if (customMappingEnabled) {
-                attributeName = customMappedAttributes.get(attributeName);
+                attributeName = customMappedAttributes.get(i);
+            } else {
+                attributeName = attributeList.get(i).getName();
             }
+            Attribute.Type attributeType = attributeList.get(i).getType();
 
             if (attributeName.startsWith(META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
@@ -189,7 +191,7 @@ public class WSO2SinkMapper extends SinkMapper {
     @Override
     public void mapAndSend(Event event, OptionHolder optionHolder, TemplateBuilder templateBuilder,
                            SinkListener sinkListener) {
-        sinkListener.publish(constructMapping(event));
+        sinkListener.publish(performMapping(event));
     }
 
     /**
@@ -204,7 +206,7 @@ public class WSO2SinkMapper extends SinkMapper {
     public void mapAndSend(Event[] events, OptionHolder optionHolder, TemplateBuilder templateBuilder,
                            SinkListener sinkListener) {
         for (Event event : events) {
-            sinkListener.publish(constructMapping(event));
+            sinkListener.publish(performMapping(event));
         }
     }
 
@@ -214,7 +216,7 @@ public class WSO2SinkMapper extends SinkMapper {
      * @param event Event object
      * @return the constructed WSO2 Event
      */
-    private org.wso2.carbon.databridge.commons.Event constructMapping(Event event) {
+    private org.wso2.carbon.databridge.commons.Event performMapping(Event event) {
         org.wso2.carbon.databridge.commons.Event wso2event = new org.wso2.carbon.databridge.commons.Event();
         wso2event.setTimeStamp(event.getTimestamp());
         wso2event.setStreamId(this.outputStreamId);
