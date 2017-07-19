@@ -20,7 +20,7 @@ package org.wso2.extension.siddhi.map.wso2event.source;
 
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
-import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
+import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
@@ -40,9 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
  * This mapper converts WSO2 input event to {@link org.wso2.siddhi.core.event.ComplexEventChunk}. This extension
@@ -84,7 +84,7 @@ import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_
                                 "volume='volume'," +
                                 "portfolioId='arbitrary_portfolio_ID'" +
                                 ")))" +
-                                "define stream FooStream (meta_timestamp long, symbol string, price float, " +
+                                "define stream FooStream (timestamp long, symbol string, price float, " +
                                 "volume long, portfolioId string)); ",
                         description = "Above configuration will perform a WSO2 mapping. Expected input should be as " +
                                 "follows,\n" +
