@@ -20,8 +20,6 @@ package org.wso2.extension.siddhi.map.wso2event.sink;
 import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
@@ -33,15 +31,13 @@ import org.wso2.siddhi.core.util.transport.TemplateBuilder;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.CUSTOM_MAPPING_ENABLED;
 import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 
@@ -61,16 +57,9 @@ import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_
                 "1. meta_ - metaData," +
                 "2. correlation_ - correlationData," +
                 "3. arbitrary_ - value contained in the arbitraryMap mapped to the key defined after the prefix" +
-                "If the above prefixes are not used, the attribute is taken as payload data.",
-        parameters = {
-                @Parameter(name = "enable.custom.mapping",
-                        description = "Specifies if the custom mapping should be enabled. If enabled, the attributes " +
-                                "defined in the stream definition must be given as parameters mapping to the " +
-                                "attribute name in the wso2event.",
-                        type = {DataType.BOOL},
-                        optional = true,
-                        defaultValue = "false")
-        },
+                "If the above prefixes are not used, the attribute is taken as payload data.\n" +
+                "To enable custom mapping, all the attributes must be given as key value pair in the annotation, " +
+                "where the wso2 event attribute name key mapped to the siddhi attribute name.",
         examples = {
                 @Example(
                         syntax = "@sink(type='wso2event', @map(type='wso2event')); " +
@@ -85,9 +74,13 @@ import static org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils.META_
                                 "                 payloadData: [symbol, price, volume]\n" +
                                 "            }\n"),
                 @Example(
-                        syntax = "@sink(type='wso2event', @map(type='wso2event', enable.custom.mapping='true'," +
-                                "timestamp='meta_timestamp', symbol='symbol', price='price', volume='volume', " +
-                                "portfolioID='arbitrary_portfolio_ID')) " +
+                        syntax = "@sink(type='wso2event', " +
+                                "@map(type='wso2event'," +
+                                "meta_timestamp='timestamp', " +
+                                "symbol='symbol', " +
+                                "price='price'," +
+                                "volume='volume', " +
+                                "arbitrary_portfolioID='portfolio_ID')) " +
                                 "define stream FooStream (timestamp long, symbol string, price float, " +
                                 "volume long, portfolioID string);",
                         description = "Above configuration will perform a WSO2 custom mapping which will produce the " +
@@ -142,24 +135,26 @@ public class WSO2SinkMapper extends SinkMapper {
         this.correlationDataMap = new HashMap<>();
         this.payloadDataMap = new HashMap<>();
         this.arbitraryDataMap = new HashMap<>();
-        List<String> customMappedAttributes = new ArrayList<>();
+        Map<String, String> mappedAttributes = new HashMap<>();
 
-        boolean customMappingEnabled = Boolean.parseBoolean(
-                optionHolder.validateAndGetStaticValue(CUSTOM_MAPPING_ENABLED, "false"));
+        Set<String> staticOptionsKeys = optionHolder.getStaticOptionsKeys();
+        staticOptionsKeys.remove("type");
+        boolean customMappingEnabled = staticOptionsKeys.size() > 0;
         if (customMappingEnabled) {
-            customMappedAttributes = attributeList.stream()
-                    .map((attribute) -> optionHolder.validateAndGetStaticValue(attribute.getName()))
-                    .collect(Collectors.toList());
+            staticOptionsKeys.forEach((key) -> mappedAttributes.put(optionHolder.validateAndGetStaticValue(key), key));
         }
 
         int metaCount = 0, correlationCount = 0, payloadCount = 0;
 
         for (int i = 0; i < attributeList.size(); i++) {
-            String attributeName;
+            String attributeName = attributeList.get(i).getName();
             if (customMappingEnabled) {
-                attributeName = customMappedAttributes.get(i);
-            } else {
-                attributeName = attributeList.get(i).getName();
+                if (mappedAttributes.get(attributeName) != null) {
+                    attributeName = mappedAttributes.get(attributeName);
+                } else {
+                    throw new SiddhiAppCreationException("The siddhi attribute '" + attributeName + "', is not " +
+                            "mapped in the annotation @map() for custom mapping.");
+                }
             }
             Attribute.Type attributeType = attributeList.get(i).getType();
 

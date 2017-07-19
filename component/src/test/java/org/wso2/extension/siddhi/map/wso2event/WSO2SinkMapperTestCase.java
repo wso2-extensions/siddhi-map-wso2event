@@ -706,13 +706,12 @@ public class WSO2SinkMapperTestCase {
                 "define stream FooStream (timestamp long, symbolCR string, symbol string, price float," +
                 " volume int, key1 string); " +
                 "@sink(type='inMemory', topic='{{symbol}}', @map(type='wso2event', " +
-                "enable.custom.mapping ='true', " +
-                "timestamp='meta_timestamp'," +
-                "symbolCR= 'correlation_symbol'," +
-                "symbol='symbol'," +
+                "meta_timestamp='timestamp'," +
+                "correlation_symbol = 'symbolCR'," +
                 "price='price'," +
+                "symbol='symbol'," +
                 "volume='volume'," +
-                "key1='arbitrary_key1' )) " +
+                "arbitrary_key1='key1' )) " +
                 "define stream BarStream (timestamp long, symbolCR string, symbol string, price float," +
                 " volume int, key1 string); ";
         String query = "" +
@@ -759,6 +758,32 @@ public class WSO2SinkMapperTestCase {
         //unsubscribe from "inMemory" broker per topic
         InMemoryBroker.unsubscribe(subscriberWSO2);
         InMemoryBroker.unsubscribe(subscriberIBM);
+        siddhiManager.shutdown();
+    }
+
+    @Test(expectedExceptions = SiddhiAppCreationException.class)
+    public void testWSO2SinkmapperCustomMappingWithoutAttributeMapped() throws InterruptedException {
+        log.info("Test custom wso2event mapping with SiddhiQL with no value mapped");
+        String streams = "" +
+                "@App:name('TestSiddhiApp')" +
+                "define stream FooStream (timestamp long, symbolCR string, symbol string, price float," +
+                " volume int, key1 string); " +
+                "@sink(type='inMemory', topic='{{symbol}}', @map(type='wso2event', " +
+                "meta_timestamp='timestamp'," +
+                "correlation_symbol = 'symbolCR'," +
+                "symbol='symbol'," +
+                "volume='volume'," +
+                "arbitrary_key1='key1' )) " +
+                "define stream BarStream (timestamp long, symbolCR string, symbol string, price float," +
+                " volume int, key1 string); ";
+        String query = "" +
+                "from FooStream " +
+                "select * " +
+                "insert into BarStream; ";
+        SiddhiManager siddhiManager = new SiddhiManager();
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(streams + query);
+        siddhiAppRuntime.start();
+        siddhiAppRuntime.shutdown();
         siddhiManager.shutdown();
     }
 }
