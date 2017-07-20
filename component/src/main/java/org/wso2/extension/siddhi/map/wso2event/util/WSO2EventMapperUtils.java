@@ -16,60 +16,63 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.map.wso2event;
+package org.wso2.extension.siddhi.map.wso2event.util;
 
 import org.wso2.carbon.databridge.commons.AttributeType;
 import org.wso2.carbon.databridge.commons.StreamDefinition;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.List;
 
 /**
- * Util class for WSO2EventMapper
+ * Util class for WSO2EventMapper.
  */
 public class WSO2EventMapperUtils {
     public static final String STREAM_NAME_VER_DELIMITER = ":";
     public static final String DEFAULT_STREAM_VERSION = "1.0.0";
-    public static final String ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME = "arbitrary.map";
     public static final String META_DATA_PREFIX = "meta_";
     public static final String CORRELATION_DATA_PREFIX = "correlation_";
+    public static final String ARBITRARY_DATA_PREFIX = "arbitrary_";
+    public static final String CUSTOM_MAPPING_ENABLED = "enable.custom.mapping";
 
     /**
-     * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}
+     * Convert the given {@link Attribute} to WSO2 {@link org.wso2.carbon.databridge.commons.Attribute}.
      *
-     * @param attribute Siddhi Event attribute object
+     * @param attributeName Siddhi Event attribute name
+     * @param attributeType Siddhi Event attribute type
      * @return the created WSO2 Event attribute
      */
-    public static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(Attribute attribute) {
-        org.wso2.carbon.databridge.commons.AttributeType attribute1;
-        switch (attribute.getType()) {
+    public static org.wso2.carbon.databridge.commons.Attribute createWso2EventAttribute(
+            String attributeName, Attribute.Type attributeType) {
+        org.wso2.carbon.databridge.commons.AttributeType dbAttributeType;
+        switch (attributeType) {
             case BOOL:
-                attribute1 = AttributeType.BOOL;
+                dbAttributeType = AttributeType.BOOL;
                 break;
             case STRING:
-                attribute1 = AttributeType.STRING;
+                dbAttributeType = AttributeType.STRING;
                 break;
             case INT:
-                attribute1 = AttributeType.INT;
+                dbAttributeType = AttributeType.INT;
                 break;
             case LONG:
-                attribute1 = AttributeType.LONG;
+                dbAttributeType = AttributeType.LONG;
                 break;
             case FLOAT:
-                attribute1 = AttributeType.FLOAT;
+                dbAttributeType = AttributeType.FLOAT;
                 break;
             case DOUBLE:
-                attribute1 = AttributeType.DOUBLE;
+                dbAttributeType = AttributeType.DOUBLE;
                 break;
             default:
-                attribute1 = null;
+                throw new SiddhiAppCreationException("Attribute type is not valid when converting to data bridge " +
+                        "attribute. Found attribute,  Name : '" + attributeName + "', " +
+                        "Type: '" + attributeType + "'");
         }
-        if (null != attribute1) {
-            return new org.wso2.carbon.databridge.commons.Attribute(attribute.getName(), attribute1);
-        } else {
-            return null;
-        }
+
+        return new org.wso2.carbon.databridge.commons.Attribute(attributeName, dbAttributeType);
     }
 
     public static StreamDefinition createWSO2EventStreamDefinition(
@@ -85,10 +88,4 @@ public class WSO2EventMapperUtils {
         return wso2StreamDefinition;
     }
 
-    /**
-     * Enum class which defines the WSO2Event Data Prefix
-     */
-    public enum InputDataType {
-        META_DATA, CORRELATION_DATA, PAYLOAD_DATA
-    }
 }

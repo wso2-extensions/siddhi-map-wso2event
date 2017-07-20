@@ -20,13 +20,13 @@ package org.wso2.extension.siddhi.map.wso2event.source;
 
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
-import org.wso2.extension.siddhi.map.wso2event.WSO2EventMapperUtils;
+import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
+import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.input.source.AttributeMapping;
 import org.wso2.siddhi.core.stream.input.source.InputEventHandler;
 import org.wso2.siddhi.core.stream.input.source.SourceMapper;
@@ -37,10 +37,11 @@ import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+
+import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
+import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
  * This mapper converts WSO2 input event to {@link org.wso2.siddhi.core.event.ComplexEventChunk}. This extension
@@ -49,151 +50,142 @@ import java.util.TreeMap;
 @Extension(
         name = "wso2event",
         namespace = "sourceMapper",
-        description = "WSO2 event to Siddhi Event input mapper. Transports which accepts WSO2 messages can utilize " +
+        description = "WSO2 Event to Siddhi Event input mapper. Transports which accepts WSO2 messages can utilize " +
                 "this extension to convert the incoming WSO2 message to Siddhi event. Users can send a WSO2 message" +
-                "which should contain the mapping stream attributes in the same order as the defined stream. This " +
-                "conversion will happen without any configs.",
-        parameters = {
-                @Parameter(name = "arbitrary.map",
-                           description =
-                                "Used to provide the attribute name of the stream which the arbitrary object to be " +
-                                        "mapped" +
-                                        "eg: arbitrary.map='foo' foo is a attribute name in the stream definition " +
-                                        "with the attribute type object",
-                           type = {DataType.STRING},
-                           optional = true,
-                           defaultValue = "null")
-        },
+                "which should contain the mapping stream attributes in the same order as the defined stream (Within " +
+                "a WSO2 Event attribute type). This conversion will happen without any configs.\n" +
+                "Following prefixes will be used to identify different attributes such as meta, correlation, payload " +
+                "and arbitrary. Prefixes available," +
+                "1. meta_ - metaData," +
+                "2. correlation_ - correlationData," +
+                "3. arbitrary_ - value contained in the arbitraryMap mapped to the key defined after the prefix" +
+                "If the above prefixes are not used, the attribute is taken as payload data.",
         examples = {
                 @Example(
                         syntax = "@source(type=’wso2event’, @map(type=’wso2event’) " +
                                 "define stream FooStream (meta_timestamp long, symbol string, price float, " +
                                 "volume long);",
-                        description = "Above configuration will do a WSO2 mapping. Expected input will look like " +
-                                "below.\n" +
+                        description = "Above configuration will perform a WSO2 default mapping. Expected input " +
+                                "should be as follows.\n" +
                                 "Wso2event = {\n" +
                                 "                streamId: org.wso2event.fooStream:1.0.0,\n" +
                                 "                timestamp: 431434134134,\n" +
-                                "                metaData: [timestamp, meta_object2],\n" +
-                                "                correlationData: [correlation_object1],\n" +
+                                "                metaData: [timestamp],\n" +
+                                "                correlationData: [],\n" +
                                 "                payloadData: [symbol, price, volume]\n" +
-                                "            }\n" +
-                                "There can be at least the number of attributes of each type (meta, " +
-                                "correlation, payload) or more than defined in the stream definition" +
-                                " eg: metaData array has more than meta attributes defined and payloadData " +
-                                "has the exact amount of attributes as defined in the stream"),
+                                "            }\n"),
                 @Example(
-                        syntax = "@source(type=’wso2event’, @map(type=’wso2event’, arbitrary.map='arbitrary_object'))" +
-                                "define stream FooStream (meta_timestamp long, symbol string, price float, " +
-                                "volume long, arbitrary_object object)); ",
-                        description = "Above configuration will do a WSO2 mapping which also expects an arbitrary " +
-                                "map. Expected input will look like below.\n" +
+                        syntax = "@source(type=’wso2event’, @map(type=’wso2event’, " +
+                                "@attributes(" +
+                                "timestamp='meta_timestamp'," +
+                                "symbol='symbol'," +
+                                "price='price'," +
+                                "volume='volume'," +
+                                "portfolioId='arbitrary_portfolio_ID'" +
+                                ")))" +
+                                "define stream FooStream (timestamp long, symbol string, price float, " +
+                                "volume long, portfolioId string)); ",
+                        description = "Above configuration will perform a WSO2 mapping. Expected input should be as " +
+                                "follows,\n" +
                                 "Wso2event = {\n" +
                                 "                streamId: org.wso2event.fooStream:1.0.0,\n" +
                                 "                timeStamp: 431434134134,\n" +
-                                "                metaData: [timestamp, meta_object2],\n" +
-                                "                correlationData: [correlation_object1],\n" +
+                                "                metaData: [timestamp],\n" +
+                                "                correlationData: [],\n" +
                                 "                payloadData: [symbol, price, volume],\n" +
-                                "                arbitraryDataMap: objectMap,\n" +
+                                "                arbitraryDataPosition: objectMap,\n" +
                                 "            }\n" +
-                                "The WSO2 mapper will get the arbitrary map in the WSO2 event. And assign its" +
-                                " value. If the map is not defined, the Siddhi events arbitrary object value " +
-                                "would be assigned as null"),
+                                "The WSO2 mapper will get the arbitrary map in the WSO2 event and assign its' " +
+                                "value associated with the key 'portfolio_ID' to the siddhi attribute. If the map " +
+                                "does not contain the key value pair, null will be passed."),
         }
 )
 public class WSO2SourceMapper extends SourceMapper {
     private static final Logger LOGGER = Logger.getLogger(WSO2SourceMapper.class);
-    private List<Attribute> attributeList;
-    private Map<WSO2EventMapperUtils.InputDataType, Map<Integer, Integer>> attributePositionMap = null;
-    private int arbitraryAttributeIndex = -1;
+
     private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
+    private int numAttributes;
+    private int numMetaAttributes;
+    private int numCorrelationAttributes;
+    private int numPayloadAttributes;
+    private Integer[] metaDataPositions;
+    private Integer[] correlationDataPosition;
+    private Integer[] payloadDataPosition;
+    private AttributePosition[] arbitraryDataPosition;
 
     /**
      * Initialize the mapper and the mapping configurations.
      *
-     * @param streamDefinition     the StreamDefinition
-     * @param optionHolder         mapping options
-     * @param list list of attributes mapping
-     * @param configReader Deployment Config Reader
-     * @param  siddhiAppContext Siddhi App context
+     * @param streamDefinition the StreamDefinition
+     * @param optionHolder     mapping options
+     * @param list             list of attributes mapping
+     * @param configReader     Deployment Config Reader
+     * @param siddhiAppContext Siddhi App context
      */
     @Override
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, List<AttributeMapping> list,
                      ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
-        attributeList = streamDefinition.getAttributeList();
+        List<Attribute> attributeList = streamDefinition.getAttributeList();
 
-        //TODO - convert attributePositionMap in to list, loop through that and set values. Update : Seems like this is
-        // bit expensive operation compare to the current one then avoided it.
+        this.numAttributes = attributeList.size();
 
-        attributePositionMap = new HashMap<>(attributeList.size());
-        String arbitraryAttributeName = optionHolder.validateAndGetStaticValue(
-                WSO2EventMapperUtils.ARBITRARY_MAP_ATTRIBUTE_PARAMETER_NAME, null);
-        Map<Integer, Integer> payloadDataMap = new TreeMap<Integer, Integer>();
-        Map<Integer, Integer> metaDataMap = new TreeMap<Integer, Integer>();
-        Map<Integer, Integer> correlationDataMap = new TreeMap<Integer, Integer>();
-        int metaCount = 0, correlationCount = 0, payloadCount = 0;
         List<org.wso2.carbon.databridge.commons.Attribute> metaAttributeList = new ArrayList<>();
         List<org.wso2.carbon.databridge.commons.Attribute> correlationAttributeList = new ArrayList<>();
         List<org.wso2.carbon.databridge.commons.Attribute> payloadAttributeList = new ArrayList<>();
-        org.wso2.carbon.databridge.commons.Attribute wso2eventAttribute;
-        if (list != null && list.size() > 0) {
-            throw new SiddhiAppValidationException("WSO2 Transport does not support custom mapping. Please remove" +
-                    " @attributes section in mapping.");
-        } else {
-            //default mapping scenario
-            for (int i = 0; i < attributeList.size(); i++) {
-                if (attributeList.get(i).getName().startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
-                    //meta array's metaCount'th attribute of import stream will be mapped to the i'th
-                    // location of the export stream.
-                    wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
-                    if (null != wso2eventAttribute) {
-                        metaAttributeList.add(wso2eventAttribute);
-                    }
-                    metaDataMap.put(metaCount, i);
-                    metaCount++;
-                } else if (attributeList.get(i).getName().startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
-                    wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
-                    if (null != wso2eventAttribute) {
-                        correlationAttributeList.add(wso2eventAttribute);
-                    }
-                    correlationDataMap.put(correlationCount, i);
-                    correlationCount++;
-                } else if (null != arbitraryAttributeName &&
-                        attributeList.get(i).getName().equals(arbitraryAttributeName)) {
-                    if (Attribute.Type.OBJECT.equals(attributeList.get(i).getType())) {
-                        arbitraryAttributeIndex = i;
-                    } else {
-                        throw new SiddhiAppValidationException("defined arbitrary.map attribute in the " +
-                                "stream mapping is type: " + attributeList.get(i).getType() + ". It should be type: " +
-                                Attribute.Type.OBJECT);
-                    }
-                } else if (Attribute.Type.OBJECT.equals(attributeList.get(i).getType())) {
-                    throw new SiddhiAppValidationException("Please define arbitrary.map attribute in the " +
-                            "stream mapping if there is a \"object\" type attribute in the stream definition");
+
+        List<Integer> metaDataPositions = new ArrayList<>();
+        List<Integer> correlationDataPositions = new ArrayList<>();
+        List<Integer> payloadDataPositions = new ArrayList<>();
+        List<AttributePosition> arbitraryDataPositions = new ArrayList<>();
+
+        for (int i = 0; i < attributeList.size(); i++) {
+            String attributeName;
+            if (list != null && list.size() > 0) {
+                attributeName = list.get(i).getMapping();
+            } else {
+                attributeName = attributeList.get(i).getName();
+            }
+            Attribute.Type attributeType = attributeList.get(i).getType();
+
+            if (attributeName.startsWith(META_DATA_PREFIX)) {
+                //meta array's metaCount'th attribute of import stream will be mapped to the i'th
+                // location of the export stream.
+                metaAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attributeName, attributeType));
+                metaDataPositions.add(i);
+            } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
+                correlationAttributeList.add(WSO2EventMapperUtils
+                        .createWso2EventAttribute(attributeName, attributeType));
+                correlationDataPositions.add(i);
+            } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
+                if (attributeType.equals(Attribute.Type.STRING)) {
+                    arbitraryDataPositions.add(
+                            new AttributePosition(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i));
                 } else {
-                    wso2eventAttribute = WSO2EventMapperUtils.createWso2EventAttribute(attributeList.get(i));
-                    if (null != wso2eventAttribute) {
-                        payloadAttributeList.add(wso2eventAttribute);
-                    }
-                    payloadDataMap.put(payloadCount, i);
-                    payloadCount++;
+                    throw new SiddhiAppCreationException("Arbitrary Map attribute '" + attributeName + "' has " +
+                            "been mapped to '" + attributeType + "' in Siddhi app '" + siddhiAppContext.getName() +
+                            "'. However, arbitrary map value can only be mapped to type 'String'.");
                 }
+            } else {
+                payloadAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attributeName, attributeType));
+                payloadDataPositions.add(i);
             }
         }
+
+
+        this.numMetaAttributes = metaDataPositions.size();
+        this.numCorrelationAttributes = correlationDataPositions.size();
+        this.numPayloadAttributes = payloadDataPositions.size();
+        this.metaDataPositions = metaDataPositions.toArray(new Integer[this.numMetaAttributes]);
+        this.correlationDataPosition = correlationDataPositions.toArray(new Integer[this.numCorrelationAttributes]);
+        this.payloadDataPosition = payloadDataPositions.toArray(new Integer[this.numPayloadAttributes]);
+        this.arbitraryDataPosition = arbitraryDataPositions.toArray(
+                                                    new AttributePosition[arbitraryDataPositions.size()]);
+
         try {
             this.streamDefinition = WSO2EventMapperUtils.createWSO2EventStreamDefinition(streamDefinition.getId(),
                     metaAttributeList, correlationAttributeList, payloadAttributeList);
         } catch (MalformedStreamDefinitionException e) {
             throw new SiddhiAppValidationException(e.getMessage(), e);
-        }
-        if (0 < metaDataMap.size()) {
-            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.META_DATA, metaDataMap);
-        }
-        if (0 < correlationDataMap.size()) {
-            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.CORRELATION_DATA, correlationDataMap);
-        }
-        if (0 < payloadDataMap.size()) {
-            attributePositionMap.put(WSO2EventMapperUtils.InputDataType.PAYLOAD_DATA, payloadDataMap);
         }
     }
 
@@ -210,35 +202,35 @@ public class WSO2SourceMapper extends SourceMapper {
         org.wso2.carbon.databridge.commons.Event wso2event;
         if (eventObject instanceof org.wso2.carbon.databridge.commons.Event) {
             wso2event = (org.wso2.carbon.databridge.commons.Event) eventObject;
-            Object outputAttributes[] = new Object[attributeList.size()];
-            Map<Integer, Integer> metaPositions = attributePositionMap.get(WSO2EventMapperUtils.
-                    InputDataType.META_DATA);
-            Map<Integer, Integer> correlationPositions = attributePositionMap.get(
-                    WSO2EventMapperUtils.InputDataType.CORRELATION_DATA);
-            Map<Integer, Integer> payloadPositions = attributePositionMap.get(WSO2EventMapperUtils.
-                    InputDataType.PAYLOAD_DATA);
-            if (null != metaPositions) {
-                for (Map.Entry<Integer, Integer> entry : metaPositions.entrySet()) {
-                    outputAttributes[entry.getValue()] = wso2event.getMetaData()[entry.getKey()];
-                }
+            Object outputAttributes[] = new Object[this.numAttributes];
+
+            for (int i = 0; i < this.numMetaAttributes; i++) {
+                outputAttributes[this.metaDataPositions[i]] = wso2event.getMetaData()[i];
             }
-            if (null != correlationPositions) {
-                for (Map.Entry<Integer, Integer> entry : correlationPositions.entrySet()) {
-                    outputAttributes[entry.getValue()] = wso2event.getCorrelationData()[entry.getKey()];
-                }
+
+            for (int i = 0; i < this.numCorrelationAttributes; i++) {
+                outputAttributes[this.correlationDataPosition[i]] =
+                        wso2event.getCorrelationData()[i];
             }
-            if (null != payloadPositions) {
-                for (Map.Entry<Integer, Integer> entry : payloadPositions.entrySet()) {
-                    outputAttributes[entry.getValue()] = wso2event.getPayloadData()[entry.getKey()];
-                }
+
+            for (int i = 0; i < this.numPayloadAttributes; i++) {
+                outputAttributes[this.payloadDataPosition[i]] = wso2event.getPayloadData()[i];
             }
-            if (-1 != arbitraryAttributeIndex) {
-                outputAttributes[arbitraryAttributeIndex] = wso2event.getArbitraryDataMap();
+
+            for (AttributePosition arbitraryDataPosirion : this.arbitraryDataPosition) {
+                outputAttributes[arbitraryDataPosirion.getAttributePosition()] =
+                        wso2event.getArbitraryDataMap().get(arbitraryDataPosirion.getAttributeName());
             }
+
+            for (AttributePosition anArbitraryDataList : this.arbitraryDataPosition) {
+                outputAttributes[anArbitraryDataList.getAttributePosition()] =
+                        wso2event.getArbitraryDataMap().get(anArbitraryDataList.getAttributeName());
+            }
+
             inputEventHandler.sendEvent(new Event(wso2event.getTimeStamp(), outputAttributes));
         } else {
             LOGGER.warn("Event object is invalid. Expected WSO2Event, but found " + eventObject.getClass()
-                    .getCanonicalName() + ". Hence dropping the event");
+                    .getCanonicalName() + ". Hence, dropping the event");
         }
     }
 
