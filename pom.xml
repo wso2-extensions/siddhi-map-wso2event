@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>wso2</artifactId>
         <groupId>org.wso2</groupId>
@@ -11,7 +10,7 @@
 
     <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
     <artifactId>siddhi-map-wso2event-parent</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.1</version>
     <name>Siddhi Mapper WSO2 Extension Parent</name>
 
     <modules>
@@ -98,7 +97,7 @@
         <url>https://github.com/wso2-extensions/siddhi-map-wso2event.git</url>
         <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2event.git</developerConnection>
         <connection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2event.git</connection>
-        <tag>HEAD</tag>
+        <tag>v4.0.1</tag>
     </scm>
 
     <repositories>
