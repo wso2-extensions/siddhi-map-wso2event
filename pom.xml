@@ -55,6 +55,12 @@
                 <version>${testng.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.agent</artifactId>
+                <classifier>runtime</classifier>
+                <version>${jacoco.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -91,6 +97,7 @@
         <carbon.feature.plugin.version>3.0.0</carbon.feature.plugin.version>
         <carbon.analytics.version>2.0.38</carbon.analytics.version>
         <testng.version>6.9.4</testng.version>
+        <jacoco.version>0.7.9</jacoco.version>
     </properties>
 
     <scm>
