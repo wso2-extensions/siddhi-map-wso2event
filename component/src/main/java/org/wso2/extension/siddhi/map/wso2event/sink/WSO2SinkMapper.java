@@ -49,25 +49,19 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
  * to the WSO2 event attributes as well.
  */
 @Extension(
+
         name = "wso2event",
         namespace = "sinkMapper",
-        description = "Event to WSO2 output mapper. Transports which publish WSO2 messages, can utilize this " +
-                "extension to convert the Siddhi event to WSO2 event objects. Users can send pre-defined WSO2 event " +
-                "format which adheres to the defined stream.\n" +
-                "Following prefixes will be used to identify different attributes such as meta, correlation, " +
-                "payload and arbitrary. Prefixes available," +
-                "1. meta_ - metaData," +
-                "2. correlation_ - correlationData," +
-                "3. arbitrary_ - value contained in the arbitraryMap mapped to the key defined after the prefix" +
-                "If the above prefixes are not used, the attribute is taken as payload data.\n" +
-                "To enable custom mapping, all the attributes must be given as key value pair in the annotation, " +
-                "where the wso2 event attribute name key mapped to the siddhi attribute name.",
+        description = "This section explains how to map events processed via Siddhi in order to publish them in " +
+                "the `WSO2Event` format. In default mapping, the format used is the pre-defined WSO2Event format " +
+                "that adheres to the schema of the defined stream. In order to use custom mapping, additional " +
+                "parameters need to be configured (i.e., in addition to the format type).\n",
         examples = {
-                @Example(
-                        syntax = "@sink(type='wso2event', @map(type='wso2event')); " +
-                                "define stream FooStream (symbol string, price float, volume long);",
-                        description = "Above configuration will perform a WSO2 default input mapping which will " +
-                                "generate the following output.\n" +
+            @Example(
+                syntax = "`@sink(type='wso2event', @map(type='wso2event')); `" +
+                                "`define stream FooStream (symbol string, price float, volume long);`",
+                description = "This configuration performs a WSO2 default input mapping that generates the" +
+                                "following output.\n" +
                                 "Wso2event = {\n" +
                                 "                 streamId: barStream:1.0.0,\n" +
                                 "                 timestamp: FooStream_siddhi_event_timestamp,\n" +
@@ -75,8 +69,9 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                                 "                 correlationData: [],\n" +
                                 "                 payloadData: [symbol, price, volume]\n" +
                                 "            }\n"),
-                @Example(
-                        syntax = "@sink(type='wso2event', " +
+
+            @Example(
+                syntax = "@sink(type='wso2event', " +
                                 "@map(type='wso2event'," +
                                 "meta_timestamp='timestamp', " +
                                 "symbol='symbol', " +
@@ -85,8 +80,8 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                                 "arbitrary_portfolioID='portfolio_ID')) " +
                                 "define stream FooStream (timestamp long, symbol string, price float, " +
                                 "volume long, portfolioID string);",
-                        description = "Above configuration will perform a WSO2 custom mapping which will produce the " +
-                                "following output.\n" +
+                description = "This configuration performs a custom mapping and produces the following " +
+                                "output.\n" +
                                 "Wso2event = {\n" +
                                 "                 streamId: barStream:1.0.0,\n" +
                                 "                 timeStamp: FooStream_siddhi_event_timestamp,\n" +
@@ -95,7 +90,9 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                                 "                 payloadData: [symbol, price, volume],\n" +
                                 "                 arbitraryDataMap: arbitrary\n" +
                                 "            }\n" +
-                                "where arbitrary object contains a map entry : <portfolio_ID, 'value for portfolioID'>")
+                                "The value of the `arbitrary_portfolioID` attribute in the processed Siddhi event " +
+                        "is assigned as the value for the `portfolio_ID` attribute in the published `WSO2Event` " +
+                        "event.'>")
         }
 )
 public class WSO2SinkMapper extends SinkMapper {
