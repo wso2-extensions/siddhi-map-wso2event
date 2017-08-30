@@ -27,6 +27,7 @@ import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.sink.InMemorySink;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
 import org.wso2.siddhi.core.util.transport.InMemoryBroker;
 
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class WSO2SinkMapperTestCase {
         stockStream.send(new Object[]{2212212121L, "US", "IBM", 65.645f, 200L, "value11"});
         stockStream.send(new Object[]{3212212121L, "SL", "IBM", 75.645f, 300L, null});
         stockStream.send(new Object[]{3212212121L, "SL", "WSO2", null, 300L, "value111"});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 2, wso2Count.get());
@@ -183,7 +184,7 @@ public class WSO2SinkMapperTestCase {
         stockStream.send(new Object[]{2212212121L, "US", "IBM", 65.645f, 200L, "value11"});
         stockStream.send(new Object[]{3212212121L, "SL", "IBM", 75.645f, 300L});
         stockStream.send(new Object[]{3212212121L, "SL", "WSO2", null, 300L, "value111"});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 2, wso2Count.get());
@@ -270,7 +271,7 @@ public class WSO2SinkMapperTestCase {
         stockStream.send(new Object[]{2212212121L, "IBM", "US", 65.645f, "value11", 200L});
         stockStream.send(new Object[]{3212212121L, "IBM", "SL", 75.645f, null, 300L});
         stockStream.send(new Object[]{3212212121L, "WSO2", "SL", null, "value111", 300L});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 2, wso2Count.get());
@@ -355,7 +356,7 @@ public class WSO2SinkMapperTestCase {
 
         siddhiAppRuntime.start();
         stockStream.send(new Object[]{1212212121L, "WSO2", "Lanka", 55.645f, "value1", 100L});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 1, wso2Count.get());
@@ -426,7 +427,7 @@ public class WSO2SinkMapperTestCase {
 
         siddhiAppRuntime.start();
         stockStream.send(new Object[]{"WSO2", "Lanka", 55.645f, "value1", 100L});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 1, wso2Count.get());
@@ -496,7 +497,7 @@ public class WSO2SinkMapperTestCase {
 
         siddhiAppRuntime.start();
         stockStream.send(new Object[]{1212212121L, "WSO2", 55.645f, "value1", 100L});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 1, wso2Count.get());
@@ -566,7 +567,7 @@ public class WSO2SinkMapperTestCase {
 
         siddhiAppRuntime.start();
         stockStream.send(new Object[]{1212212121L, "WSO2", 55.645f, "value1", 100L});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 1, wso2Count.get());
@@ -634,7 +635,7 @@ public class WSO2SinkMapperTestCase {
 
         siddhiAppRuntime.start();
         stockStream.send(new Object[]{1212212121L, "WSO2", 55.645f, "value1", "value2", 100L});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 1, wso2Count.get());
@@ -728,7 +729,7 @@ public class WSO2SinkMapperTestCase {
         stockStream.send(new Object[]{2212212121L, "US", "IBM", 65.645f, 200L, "value11"});
         stockStream.send(new Object[]{3212212121L, "SL", "IBM", 75.645f, 300L, null});
         stockStream.send(new Object[]{3212212121L, "SL", "WSO2", null, 300L, "value111"});
-        Thread.sleep(100);
+        SiddhiTestHelper.waitForEvents(100, 2, wso2Count, 5000);
 
         //assert event count
         AssertJUnit.assertEquals("Incorrect number of events consumed!", 2, wso2Count.get());

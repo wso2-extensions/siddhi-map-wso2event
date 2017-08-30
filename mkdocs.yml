@@ -1,18 +1,20 @@
-site_name: Siddhi-MAP-WSO2EVENT
+site_name: Siddhi-Map-Wso2event
 extra_css:
 - stylesheets/extra.css
+extra_javascript:
+- javascripts/extra.js
+site_favicon: images/favicon.ico
 extra:
   logo: images/siddhi-logo-w.svg
   palette:
     primary: teal
     accent: teal
+google_analytics:
+- UA-103065-28
+- auto
 pages:
 - Welcome to WSO2 Siddhi Map WSO2Event: index.md
-- Api:
-  - 4.0.1-SNAPSHOT: api/4.0.1-SNAPSHOT.md
-- About:
-  - License: about/license.md
 - API Docs:
-  - 4.0.1-SNAPSHOT: api/4.0.1-SNAPSHOT.md
   - 4.0.2-SNAPSHOT: api/4.0.2-SNAPSHOT.md
+- License: license.md
 theme: material
