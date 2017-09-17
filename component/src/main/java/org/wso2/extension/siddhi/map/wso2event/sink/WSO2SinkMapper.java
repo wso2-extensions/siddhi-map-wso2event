@@ -42,7 +42,6 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
 import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
 import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
-
 /**
  * Mapper class to convert a Siddhi message to a WSO2 event. We will be using the stream definition and populate the
  * WSO2 event attribute values accordingly and construct the WSO2 event. In case of null values, Same will be added
@@ -123,14 +122,14 @@ public class WSO2SinkMapper extends SinkMapper {
      *
      * @param streamDefinition The stream definition
      * @param optionHolder     Option holder containing static and dynamic options
-     * @param templateBuilder  Unmapped payload for reference
+     * @param payloadTemplateBuilderMap  Unmapped payload for reference
      * @param configReader     Config
      * @param siddhiAppContext SiddhiApp context
      */
     @Override
-    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder, TemplateBuilder templateBuilder,
-                     ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
-
+    public void init(StreamDefinition streamDefinition, OptionHolder optionHolder,
+            Map<String, TemplateBuilder> payloadTemplateBuilderMap, ConfigReader configReader,
+            SiddhiAppContext siddhiAppContext) {
         List<Attribute> attributeList = streamDefinition.getAttributeList();
 
         Map<String, String> mappedAttributes = new HashMap<>();
@@ -189,9 +188,17 @@ public class WSO2SinkMapper extends SinkMapper {
                 WSO2EventMapperUtils.DEFAULT_STREAM_VERSION;
     }
 
+    /**
+     * Map and publish the given {@link Event} array.
+     *
+     * @param event           Event object
+     * @param optionHolder    option holder containing static and dynamic options
+     * @param payloadTemplateBuilderMap Unmapped payload for reference
+     * @param sinkListener    output transport callback
+     */
     @Override
-    public void mapAndSend(Event event, OptionHolder optionHolder, TemplateBuilder templateBuilder,
-                           SinkListener sinkListener) {
+    public void mapAndSend(Event event, OptionHolder optionHolder,
+            Map<String, TemplateBuilder> payloadTemplateBuilderMap, SinkListener sinkListener) {
         sinkListener.publish(performMapping(event));
     }
 
@@ -200,12 +207,12 @@ public class WSO2SinkMapper extends SinkMapper {
      *
      * @param events          Event object array
      * @param optionHolder    option holder containing static and dynamic options
-     * @param templateBuilder Unmapped payload for reference
+     * @param payloadTemplateBuilderMap Unmapped payload for reference
      * @param sinkListener    output transport callback
      */
     @Override
-    public void mapAndSend(Event[] events, OptionHolder optionHolder, TemplateBuilder templateBuilder,
-                           SinkListener sinkListener) {
+    public void mapAndSend(Event[] events, OptionHolder optionHolder,
+            Map<String, TemplateBuilder> payloadTemplateBuilderMap, SinkListener sinkListener) {
         for (Event event : events) {
             sinkListener.publish(performMapping(event));
         }
