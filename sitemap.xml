@@ -10,11 +10,19 @@
     
 
     
+        
     <url>
-     <loc></loc>
-     <lastmod></lastmod>
+     <loc>/api/4.0.3/</loc>
+     <lastmod>2017-10-16</lastmod>
      <changefreq>daily</changefreq>
     </url>
+        
+    <url>
+     <loc>/api/latest/</loc>
+     <lastmod>2017-10-16</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+        
     
 
     
