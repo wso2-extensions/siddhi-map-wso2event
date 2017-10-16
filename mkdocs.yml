@@ -14,7 +14,6 @@ google_analytics:
 - auto
 pages:
 - Welcome to WSO2 Siddhi Map WSO2Event: index.md
-- API Docs:
-  - 4.0.2-SNAPSHOT: api/4.0.2-SNAPSHOT.md
+- API Docs: []
 - License: license.md
 theme: material
