@@ -231,6 +231,11 @@ public class WSO2SourceMapper extends SourceMapper {
         }
     }
 
+    @Override
+    protected boolean allowNullInTransportProperties() {
+        return false;
+    }
+
     public org.wso2.carbon.databridge.commons.StreamDefinition getWSO2StreamDefinition() {
         return this.streamDefinition;
     }
