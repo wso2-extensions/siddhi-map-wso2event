@@ -49,7 +49,7 @@
             <artifactId>log4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.analytics</groupId>
+            <groupId>org.wso2.carbon.analytics-common</groupId>
             <artifactId>org.wso2.carbon.databridge.commons</artifactId>
         </dependency>
         <dependency>
