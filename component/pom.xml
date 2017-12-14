@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
         <artifactId>siddhi-map-wso2event-parent</artifactId>
-        <version>4.0.9</version>
+        <version>4.0.10-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
