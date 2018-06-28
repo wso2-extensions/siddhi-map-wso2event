@@ -97,7 +97,6 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
 public class WSO2SinkMapper extends SinkMapper {
 
     private String outputStreamId;
-
     private int numMetaAttributes;
     private int numCorrelationAttributes;
     private int numPayloadAttributes;
@@ -183,7 +182,6 @@ public class WSO2SinkMapper extends SinkMapper {
         this.correlationDataPositions = correlationDataList.toArray(new Integer[this.numCorrelationAttributes]);
         this.payloadDataPositions = payloadDataList.toArray(new Integer[this.numPayloadAttributes]);
         this.arbitraryDataPositions = arbitraryDataList.toArray(new AttributePosition[arbitraryDataList.size()]);
-
         this.outputStreamId = streamDefinition.getId() + WSO2EventMapperUtils.STREAM_NAME_VER_DELIMITER +
                 WSO2EventMapperUtils.DEFAULT_STREAM_VERSION;
     }
