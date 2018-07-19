@@ -10,7 +10,7 @@ repo_name: Siddhi-Map-WSO2Event
 repo_url: https://github.com/wso2-extensions/siddhi-map-wso2event
 copyright: Copyright &copy; 2011 - 2018 WSO2
 theme:
-  name: 'material'
+  name: material
   logo: images/siddhi-logo-w.svg
   favicon: images/favicon.ico
   palette:
@@ -26,9 +26,9 @@ extra:
   - type: linkedin
     link: https://www.linkedin.com/groups/13553064
 markdown_extensions:
-  - admonition
-  - toc(permalink=true)
-  - codehilite(guess_lang=false)
+- admonition
+- toc(permalink=true)
+- codehilite(guess_lang=false)
 pages:
 - Welcome: index.md
 - API Docs:
@@ -44,4 +44,3 @@ pages:
   - 4.0.3: api/4.0.3.md
   - latest: api/latest.md
 - License: license.md
-
