@@ -10,7 +10,7 @@
 
     <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
     <artifactId>siddhi-map-wso2event-parent</artifactId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>4.1.0</version>
     <name>Siddhi Mapper WSO2 Extension Parent</name>
 
     <modules>
@@ -137,7 +137,7 @@
         <url>https://github.com/wso2-extensions/siddhi-map-wso2event.git</url>
         <developerConnection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2event.git</developerConnection>
         <connection>scm:git:https://github.com/wso2-extensions/siddhi-map-wso2event.git</connection>
-        <tag>HEAD</tag>
+        <tag>v4.1.0</tag>
     </scm>
 
     <repositories>
