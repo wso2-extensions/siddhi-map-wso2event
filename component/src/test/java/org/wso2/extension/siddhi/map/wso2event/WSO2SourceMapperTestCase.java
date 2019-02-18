@@ -29,6 +29,7 @@ import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.transport.InMemoryBroker;
+import org.wso2.siddhi.core.util.transport.SubscriberUnAvailableException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,7 +107,7 @@ public class WSO2SourceMapperTestCase {
      * }
      */
     @Test
-    public void testWSO2InputMappingDefault() throws InterruptedException {
+    public void testWSO2InputMappingDefault() throws InterruptedException, SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values");
         String streams = "" +
@@ -155,7 +156,8 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultWithCorrelationAttribute() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithCorrelationAttribute() throws InterruptedException,
+                                                                             SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with correlation and payload " +
                 "values");
         String streams = "" +
@@ -194,7 +196,8 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultWithMetaAttribute() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithMetaAttribute() throws InterruptedException,
+                                                                      SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with meta and payload " +
                 "values");
         String streams = "" +
@@ -232,7 +235,8 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultWithArbitraryAttributes() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithArbitraryAttributes() throws InterruptedException,
+                                                                            SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with payload and arbitrary " +
                 "values");
         String streams = "" +
@@ -287,7 +291,8 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultWithArbitraryAttributesOtherThanString() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithArbitraryAttributesOtherThanString() throws
+                                                                                    SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with payload and arbitrary " +
                 "values");
         String streams = "" +
@@ -329,7 +334,8 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultWithMultiMetaAttributes() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithMultiMetaAttributes() throws InterruptedException,
+                                                                            SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values");
         String streams = "" +
@@ -371,7 +377,8 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultWithoutPayloadAttribute() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithoutPayloadAttribute() throws InterruptedException,
+                                                                            SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping without payload values " +
                 "values");
         String streams = "" +
@@ -417,7 +424,7 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingDefaultForSingleEvent() throws InterruptedException {
+    public void testWSO2InputMappingDefaultForSingleEvent() throws SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values");
         String streams = "" +
@@ -459,7 +466,8 @@ public class WSO2SourceMapperTestCase {
 
 
     @Test
-    public void testWSO2InputMappingDefaultWithoutStreamId() throws InterruptedException {
+    public void testWSO2InputMappingDefaultWithoutStreamId() throws InterruptedException,
+                                                                    SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values");
         String streams = "" +
@@ -511,7 +519,7 @@ public class WSO2SourceMapperTestCase {
     }
 
     @Test
-    public void testWSO2InputMappingCustom() throws InterruptedException {
+    public void testWSO2InputMappingCustom() throws InterruptedException, SubscriberUnAvailableException {
         log.info("Test case for wso2event input mapping with mapping with meta, correlation, payload and arbitrary " +
                 "values");
         String streams = "" +
