@@ -18,23 +18,23 @@
 
 package org.wso2.extension.siddhi.map.wso2event.source;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.core.config.SiddhiAppContext;
+import io.siddhi.core.event.Event;
+import io.siddhi.core.exception.SiddhiAppCreationException;
+import io.siddhi.core.stream.input.source.AttributeMapping;
+import io.siddhi.core.stream.input.source.InputEventHandler;
+import io.siddhi.core.stream.input.source.SourceMapper;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.definition.StreamDefinition;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
 import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
 import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
-import org.wso2.siddhi.core.stream.input.source.AttributeMapping;
-import org.wso2.siddhi.core.stream.input.source.InputEventHandler;
-import org.wso2.siddhi.core.stream.input.source.SourceMapper;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.core.util.transport.OptionHolder;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.definition.StreamDefinition;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
 import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
- * This mapper converts WSO2 input event to {@link org.wso2.siddhi.core.event.ComplexEventChunk}. This extension
+ * This mapper converts WSO2 input event to {@link io.siddhi.core.event.ComplexEventChunk}. This extension
  * accepts WSO2 events from WSO2 receiver and maps attribute values to the defined stream.
  */
 @Extension(
@@ -187,9 +187,9 @@ public class WSO2SourceMapper extends SourceMapper {
     }
 
     /**
-     * Receives an event as an WSO2 event from WSO2 Receiver {@link org.wso2.siddhi.core.stream.input.source.Source},
-     * converts it to a {@link org.wso2.siddhi.core.event.ComplexEventChunk} and send to the
-     * {@link org.wso2.siddhi.core.query.output.callback.OutputCallback}.
+     * Receives an event as an WSO2 event from WSO2 Receiver {@link io.siddhi.core.stream.input.source.Source},
+     * converts it to a {@link io.siddhi.core.event.ComplexEventChunk} and send to the
+     * {@link io.siddhi.core.query.output.callback.OutputCallback}.
      *
      * @param eventObject       the input event, given as an WSO2 event object
      * @param inputEventHandler input handler

@@ -20,17 +20,17 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-core</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-query-api</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-annotations</artifactId>
                 <version>${siddhi.version}</version>
             </dependency>
@@ -70,7 +70,7 @@
         <build>
             <plugins>
                 <plugin>
-                    <groupId>org.wso2.siddhi</groupId>
+                    <groupId>io.siddhi</groupId>
                     <artifactId>siddhi-doc-gen</artifactId>
                     <version>${siddhi.version}</version>
                     <executions>
@@ -90,7 +90,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.wso2.siddhi</groupId>
+                <groupId>io.siddhi</groupId>
                 <artifactId>siddhi-doc-gen</artifactId>
                 <version>${siddhi.version}</version>
                 <executions>
@@ -122,7 +122,7 @@
         </pluginManagement>
     </build>
     <properties>
-        <siddhi.version>4.4.8</siddhi.version>
+        <siddhi.version>5.0.0-m4</siddhi.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <junit.version>4.12</junit.version>
         <carbon.feature.plugin.version>3.0.0</carbon.feature.plugin.version>
