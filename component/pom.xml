@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
         <artifactId>siddhi-map-wso2event-parent</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -33,15 +33,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.siddhi</groupId>
+            <groupId>io.siddhi</groupId>
             <artifactId>siddhi-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.siddhi</groupId>
+            <groupId>io.siddhi</groupId>
             <artifactId>siddhi-query-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.siddhi</groupId>
+            <groupId>io.siddhi</groupId>
             <artifactId>siddhi-annotations</artifactId>
         </dependency>
         <dependency>
@@ -79,6 +79,9 @@
                             org.wso2.extension.siddhi.map.wso2event.*
                         </Export-Package>
                         <Import-Package>
+                            io.siddhi.core.*;version="${siddhi.version.range}",
+                            io.siddhi.annotation.*;version="${siddhi.version.range}",
+                            io.siddhi.query.api.*;version="${siddhi.version.range}",
                             *;resolution:=optional
                         </Import-Package>
                         <Include-Resource>
