@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.map.wso2event.source;
+package io.siddhi.extension.map.wso2event.source;
 
 import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
@@ -28,20 +28,21 @@ import io.siddhi.core.stream.input.source.InputEventHandler;
 import io.siddhi.core.stream.input.source.SourceMapper;
 import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.transport.OptionHolder;
+import io.siddhi.extension.map.wso2event.util.AttributePosition;
+import io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils;
 import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
+
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
-import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
-import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
+import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
+import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
+import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
  * This mapper converts WSO2 input event to {@link io.siddhi.core.event.ComplexEventChunk}. This extension
@@ -176,7 +177,7 @@ public class WSO2SourceMapper extends SourceMapper {
         this.correlationDataPosition = correlationDataPositions.toArray(new Integer[this.numCorrelationAttributes]);
         this.payloadDataPosition = payloadDataPositions.toArray(new Integer[this.numPayloadAttributes]);
         this.arbitraryDataPosition = arbitraryDataPositions.toArray(
-                                                    new AttributePosition[arbitraryDataPositions.size()]);
+                new AttributePosition[arbitraryDataPositions.size()]);
 
         try {
             this.streamDefinition = WSO2EventMapperUtils.createWSO2EventStreamDefinition(streamDefinition.getId(),
