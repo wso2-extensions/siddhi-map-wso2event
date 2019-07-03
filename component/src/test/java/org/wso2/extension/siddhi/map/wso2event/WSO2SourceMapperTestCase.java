@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.siddhi.extension.map.wso2event;
+package org.wso2.extension.siddhi.map.wso2event;
 
 import io.siddhi.core.SiddhiAppRuntime;
 import io.siddhi.core.SiddhiManager;
@@ -27,6 +27,7 @@ import io.siddhi.core.util.EventPrinter;
 import io.siddhi.core.util.transport.InMemoryBroker;
 import io.siddhi.core.util.transport.SubscriberUnAvailableException;
 import org.apache.log4j.Logger;
+
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

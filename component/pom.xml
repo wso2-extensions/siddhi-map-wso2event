@@ -20,9 +20,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>io.siddhi.extension.map.wso2event</groupId>
+        <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
         <artifactId>siddhi-map-wso2event-parent</artifactId>
-        <version>5.0.1-SNAPSHOT</version>
+        <version>5.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -76,7 +76,7 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Export-Package>
-                            io.siddhi.extension.map.wso2event.*
+                            org.wso2.extension.siddhi.map.wso2event.*
                         </Export-Package>
                         <Import-Package>
                             io.siddhi.core.*;version="${siddhi.version.range}",

@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.siddhi.extension.map.wso2event.sink;
+package org.wso2.extension.siddhi.map.wso2event.sink;
 
 import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
@@ -27,20 +27,17 @@ import io.siddhi.core.stream.output.sink.SinkMapper;
 import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.core.util.transport.TemplateBuilder;
-import io.siddhi.extension.map.wso2event.util.AttributePosition;
-import io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils;
 import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
+
+import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
+import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
-import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
-import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
  * Mapper class to convert a Siddhi message to a WSO2 event. We will be using the stream definition and populate the
@@ -156,15 +153,16 @@ public class WSO2SinkMapper extends SinkMapper {
             }
             Attribute.Type attributeType = attributeList.get(i).getType();
 
-            if (attributeName.startsWith(META_DATA_PREFIX)) {
+            if (attributeName.startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
                 metaDataList.add(i);
-            } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
                 correlationDataList.add(i);
-            } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX)) {
                 if (attributeType.equals(Attribute.Type.STRING)) {
                     arbitraryDataList.add(
-                            new AttributePosition(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i));
+                            new AttributePosition(attributeName.replace(WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX,
+                                    ""), i));
                 } else {
                     throw new SiddhiAppCreationException("Arbitrary map value has been mapped to '"
                             + attributeType + "' in Siddhi app '" + siddhiAppContext.getName() + "'. " +

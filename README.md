@@ -28,7 +28,7 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
 
 ```
      <dependency>
-        <groupId>io.siddhi.extension.map.wso2event</groupId>
+        <groupId>org.wso2.extension.siddhi.map.wso2event</groupId>
         <artifactId>siddhi-map-wso2event</artifactId>
         <version>x.x.x</version>
      </dependency>

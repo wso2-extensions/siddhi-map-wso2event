@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.siddhi.extension.map.wso2event.source;
+package org.wso2.extension.siddhi.map.wso2event.source;
 
 import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
@@ -28,21 +28,17 @@ import io.siddhi.core.stream.input.source.InputEventHandler;
 import io.siddhi.core.stream.input.source.SourceMapper;
 import io.siddhi.core.util.config.ConfigReader;
 import io.siddhi.core.util.transport.OptionHolder;
-import io.siddhi.extension.map.wso2event.util.AttributePosition;
-import io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils;
 import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
+import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
+import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
-import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
-import static io.siddhi.extension.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
  * This mapper converts WSO2 input event to {@link io.siddhi.core.event.ComplexEventChunk}. This extension
@@ -145,19 +141,20 @@ public class WSO2SourceMapper extends SourceMapper {
             }
             Attribute.Type attributeType = attributeList.get(i).getType();
 
-            if (attributeName.startsWith(META_DATA_PREFIX)) {
+            if (attributeName.startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
                 //meta array's metaCount'th attribute of import stream will be mapped to the i'th
                 // location of the export stream.
                 metaAttributeList.add(WSO2EventMapperUtils.createWso2EventAttribute(attributeName, attributeType));
                 metaDataPositions.add(i);
-            } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
                 correlationAttributeList.add(WSO2EventMapperUtils
                         .createWso2EventAttribute(attributeName, attributeType));
                 correlationDataPositions.add(i);
-            } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX)) {
                 if (attributeType.equals(Attribute.Type.STRING)) {
                     arbitraryDataPositions.add(
-                            new AttributePosition(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i));
+                            new AttributePosition(attributeName.replace(WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX,
+                                    ""), i));
                 } else {
                     throw new SiddhiAppCreationException("Arbitrary Map attribute '" + attributeName + "' has " +
                             "been mapped to '" + attributeType + "' in Siddhi app '" + siddhiAppContext.getName() +

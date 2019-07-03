@@ -16,10 +16,11 @@
  * under the License.
  */
 
-package io.siddhi.extension.map.wso2event.util;
+package org.wso2.extension.siddhi.map.wso2event.util;
 
 import io.siddhi.core.exception.SiddhiAppCreationException;
 import io.siddhi.query.api.definition.Attribute;
+
 import org.wso2.carbon.databridge.commons.AttributeType;
 import org.wso2.carbon.databridge.commons.StreamDefinition;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
