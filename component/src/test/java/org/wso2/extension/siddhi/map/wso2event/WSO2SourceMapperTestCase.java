@@ -27,6 +27,7 @@ import io.siddhi.core.util.EventPrinter;
 import io.siddhi.core.util.transport.InMemoryBroker;
 import io.siddhi.core.util.transport.SubscriberUnAvailableException;
 import org.apache.log4j.Logger;
+
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

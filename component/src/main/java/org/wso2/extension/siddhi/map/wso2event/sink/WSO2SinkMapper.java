@@ -29,6 +29,7 @@ import io.siddhi.core.util.transport.OptionHolder;
 import io.siddhi.core.util.transport.TemplateBuilder;
 import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
+
 import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
 import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 
@@ -37,10 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.CORRELATION_DATA_PREFIX;
-import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.META_DATA_PREFIX;
 
 /**
  * Mapper class to convert a Siddhi message to a WSO2 event. We will be using the stream definition and populate the
@@ -56,10 +53,10 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                 "that adheres to the schema of the defined stream. In order to use custom mapping, additional " +
                 "parameters need to be configured (i.e., in addition to the format type).\n",
         examples = {
-            @Example(
-                syntax = "`@sink(type='wso2event', @map(type='wso2event')); `" +
+                @Example(
+                        syntax = "`@sink(type='wso2event', @map(type='wso2event')); `" +
                                 "`define stream FooStream (symbol string, price float, volume long);`",
-                description = "This configuration performs a WSO2 default input mapping that generates the" +
+                        description = "This configuration performs a WSO2 default input mapping that generates the" +
                                 "following output.\n" +
                                 "Wso2event = {\n" +
                                 "                 streamId: barStream:1.0.0,\n" +
@@ -69,8 +66,8 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                                 "                 payloadData: [symbol, price, volume]\n" +
                                 "            }\n"),
 
-            @Example(
-                syntax = "@sink(type='wso2event', " +
+                @Example(
+                        syntax = "@sink(type='wso2event', " +
                                 "@map(type='wso2event'," +
                                 "meta_timestamp='timestamp', " +
                                 "symbol='symbol', " +
@@ -79,7 +76,7 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                                 "arbitrary_portfolioID='portfolio_ID')) " +
                                 "define stream FooStream (timestamp long, symbol string, price float, " +
                                 "volume long, portfolioID string);",
-                description = "This configuration performs a custom mapping and produces the following " +
+                        description = "This configuration performs a custom mapping and produces the following " +
                                 "output.\n" +
                                 "Wso2event = {\n" +
                                 "                 streamId: barStream:1.0.0,\n" +
@@ -90,8 +87,8 @@ import static org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils.
                                 "                 arbitraryDataMap: arbitrary\n" +
                                 "            }\n" +
                                 "The value of the `arbitrary_portfolioID` attribute in the processed Siddhi event " +
-                        "is assigned as the value for the `portfolio_ID` attribute in the published `WSO2Event` " +
-                        "event.'>")
+                                "is assigned as the value for the `portfolio_ID` attribute in the published " +
+                                "`WSO2Event` event.'>")
         }
 )
 public class WSO2SinkMapper extends SinkMapper {
@@ -119,16 +116,16 @@ public class WSO2SinkMapper extends SinkMapper {
     /**
      * Initialize the mapper and the mapping configurations.
      *
-     * @param streamDefinition The stream definition
-     * @param optionHolder     Option holder containing static and dynamic options
-     * @param payloadTemplateBuilderMap  Unmapped payload for reference
-     * @param configReader     Config
-     * @param siddhiAppContext SiddhiApp context
+     * @param streamDefinition          The stream definition
+     * @param optionHolder              Option holder containing static and dynamic options
+     * @param payloadTemplateBuilderMap Unmapped payload for reference
+     * @param configReader              Config
+     * @param siddhiAppContext          SiddhiApp context
      */
     @Override
     public void init(StreamDefinition streamDefinition, OptionHolder optionHolder,
-            Map<String, TemplateBuilder> payloadTemplateBuilderMap, ConfigReader configReader,
-            SiddhiAppContext siddhiAppContext) {
+                     Map<String, TemplateBuilder> payloadTemplateBuilderMap, ConfigReader configReader,
+                     SiddhiAppContext siddhiAppContext) {
         List<Attribute> attributeList = streamDefinition.getAttributeList();
 
         Map<String, String> mappedAttributes = new HashMap<>();
@@ -156,15 +153,16 @@ public class WSO2SinkMapper extends SinkMapper {
             }
             Attribute.Type attributeType = attributeList.get(i).getType();
 
-            if (attributeName.startsWith(META_DATA_PREFIX)) {
+            if (attributeName.startsWith(WSO2EventMapperUtils.META_DATA_PREFIX)) {
                 //i'th location value of the export stream will be copied to meta array's metaCount'th location
                 metaDataList.add(i);
-            } else if (attributeName.startsWith(CORRELATION_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(WSO2EventMapperUtils.CORRELATION_DATA_PREFIX)) {
                 correlationDataList.add(i);
-            } else if (attributeName.startsWith(ARBITRARY_DATA_PREFIX)) {
+            } else if (attributeName.startsWith(WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX)) {
                 if (attributeType.equals(Attribute.Type.STRING)) {
                     arbitraryDataList.add(
-                            new AttributePosition(attributeName.replace(ARBITRARY_DATA_PREFIX, ""), i));
+                            new AttributePosition(attributeName.replace(WSO2EventMapperUtils.ARBITRARY_DATA_PREFIX,
+                                    ""), i));
                 } else {
                     throw new SiddhiAppCreationException("Arbitrary map value has been mapped to '"
                             + attributeType + "' in Siddhi app '" + siddhiAppContext.getName() + "'. " +
@@ -189,28 +187,28 @@ public class WSO2SinkMapper extends SinkMapper {
     /**
      * Map and publish the given {@link Event} array.
      *
-     * @param event           Event object
-     * @param optionHolder    option holder containing static and dynamic options
+     * @param event                     Event object
+     * @param optionHolder              option holder containing static and dynamic options
      * @param payloadTemplateBuilderMap Unmapped payload for reference
-     * @param sinkListener    output transport callback
+     * @param sinkListener              output transport callback
      */
     @Override
     public void mapAndSend(Event event, OptionHolder optionHolder,
-            Map<String, TemplateBuilder> payloadTemplateBuilderMap, SinkListener sinkListener) {
+                           Map<String, TemplateBuilder> payloadTemplateBuilderMap, SinkListener sinkListener) {
         sinkListener.publish(performMapping(event));
     }
 
     /**
      * Map and publish the given {@link Event} array.
      *
-     * @param events          Event object array
-     * @param optionHolder    option holder containing static and dynamic options
+     * @param events                    Event object array
+     * @param optionHolder              option holder containing static and dynamic options
      * @param payloadTemplateBuilderMap Unmapped payload for reference
-     * @param sinkListener    output transport callback
+     * @param sinkListener              output transport callback
      */
     @Override
     public void mapAndSend(Event[] events, OptionHolder optionHolder,
-            Map<String, TemplateBuilder> payloadTemplateBuilderMap, SinkListener sinkListener) {
+                           Map<String, TemplateBuilder> payloadTemplateBuilderMap, SinkListener sinkListener) {
         for (Event event : events) {
             sinkListener.publish(performMapping(event));
         }
