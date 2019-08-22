@@ -17,8 +17,8 @@ limitations under the License.
 <suite name="Carbon-Security-Test-Suite">
     <test name="carbon-security-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.extension.siddhi.map.wso2event.WSO2SinkMapperTestCase"/>
-            <class name="org.wso2.extension.siddhi.map.wso2event.WSO2SourceMapperTestCase"/>
+            <class name="io.sidhi.extension.map.wso2event.WSO2SinkMapperTestCase"/>
+            <class name="io.sidhi.extension.map.wso2event.WSO2SourceMapperTestCase"/>
         </classes>
     </test>
 </suite>

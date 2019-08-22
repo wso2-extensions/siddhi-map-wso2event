@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.extension.siddhi.map.wso2event.sink;
+package io.sidhi.extension.map.wso2event.sink;
 
 import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
@@ -30,8 +30,8 @@ import io.siddhi.core.util.transport.TemplateBuilder;
 import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
 
-import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
-import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
+import io.sidhi.extension.map.wso2event.util.AttributePosition;
+import io.sidhi.extension.map.wso2event.util.WSO2EventMapperUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.map.wso2event.util;
+package io.sidhi.extension.map.wso2event.util;
 
 import io.siddhi.core.exception.SiddhiAppCreationException;
 import io.siddhi.query.api.definition.Attribute;

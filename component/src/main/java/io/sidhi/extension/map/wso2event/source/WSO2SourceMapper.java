@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.extension.siddhi.map.wso2event.source;
+package io.sidhi.extension.map.wso2event.source;
 
 import io.siddhi.annotation.Example;
 import io.siddhi.annotation.Extension;
@@ -32,10 +32,10 @@ import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 
+import io.sidhi.extension.map.wso2event.util.AttributePosition;
+import io.sidhi.extension.map.wso2event.util.WSO2EventMapperUtils;
 import org.apache.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
-import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
-import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
 
 import java.util.ArrayList;
 import java.util.List;
