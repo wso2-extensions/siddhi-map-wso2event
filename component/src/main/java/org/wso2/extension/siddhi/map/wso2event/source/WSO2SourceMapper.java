@@ -32,7 +32,8 @@ import io.siddhi.query.api.definition.Attribute;
 import io.siddhi.query.api.definition.StreamDefinition;
 import io.siddhi.query.api.exception.SiddhiAppValidationException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.carbon.databridge.commons.exception.MalformedStreamDefinitionException;
 import org.wso2.extension.siddhi.map.wso2event.util.AttributePosition;
 import org.wso2.extension.siddhi.map.wso2event.util.WSO2EventMapperUtils;
@@ -95,7 +96,7 @@ import java.util.List;
         }
 )
 public class WSO2SourceMapper extends SourceMapper {
-    private static final Logger LOGGER = Logger.getLogger(WSO2SourceMapper.class);
+    private static final Logger LOGGER = LogManager.getLogger(WSO2SourceMapper.class);
 
     private org.wso2.carbon.databridge.commons.StreamDefinition streamDefinition;
     private int numAttributes;

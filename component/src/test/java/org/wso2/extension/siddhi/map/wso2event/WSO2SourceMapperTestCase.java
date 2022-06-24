@@ -26,7 +26,8 @@ import io.siddhi.core.stream.output.StreamCallback;
 import io.siddhi.core.util.EventPrinter;
 import io.siddhi.core.util.transport.InMemoryBroker;
 import io.siddhi.core.util.transport.SubscriberUnAvailableException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
@@ -37,7 +38,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WSO2SourceMapperTestCase {
-    private static final Logger log = Logger.getLogger(WSO2SourceMapperTestCase.class);
+    private static final Logger log = LogManager.getLogger(WSO2SourceMapperTestCase.class);
     private AtomicInteger count = new AtomicInteger();
     private org.wso2.carbon.databridge.commons.Event wso2event;
     private org.wso2.carbon.databridge.commons.Event wso2event1;
