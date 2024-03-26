@@ -1,0 +1,13 @@
+{
+    "name": "wso2event",
+    "owner": "WSO2",
+    "category": "Siddhi Map",
+    "documentationUrl": "https://wso2-extensions.github.io/siddhi-map-wso2event/",
+    "description": "The siddhi-map-wso2event extension is an extension to Siddhi that can be used to convert WSO2 events to/from Siddhi events.",
+    "status": "Active",
+    "labels": [
+        "wso2event",
+        "mapper"
+    ],
+    "releases": []
+}
